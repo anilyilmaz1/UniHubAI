@@ -3,7 +3,6 @@ import os
 import requests
 import pandas as pd
 from datetime import datetime, date
-import calendar
 from bs4 import BeautifulSoup
 from groq import Groq
 import plotly.graph_objects as go
@@ -79,17 +78,6 @@ st.markdown("""
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         border-left: 5px solid #002855;
         margin-bottom: 12px;
-    }
-    .macro-badge {
-        background-color: #e2e8f0;
-        color: #1e293b;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        margin-right: 6px;
-        display: inline-block;
-        margin-top: 6px;
     }
     .gmaps-card {
         background-color: #ffffff;
@@ -180,103 +168,33 @@ def render_google_maps_populer_saatler(cafe_name: str, day_name: str = "Salı g�
     return fig
 
 # ==========================================
-# 5. BESİN DEĞERİ MOTORU & SAÜ MENÜ HİBRİT VERİTABANI
+# 5. CHATBOT İÇİN ESNEN YEMEK BİLGİSİ
 # ==========================================
-AYLAR_TR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-            "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
-GUNLER_TR = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
-
-SABIT_TATILLER = {
-    (1, 1): "Yılbaşı",
-    (4, 23): "Ulusal Egemenlik ve Çocuk Bayramı",
-    (5, 1): "Emek ve Dayanışma Günü",
-    (5, 19): "Atatürk'ü Anma, Gençlik ve Spor Bayramı",
-    (7, 15): "Demokrasi ve Milli Birlik Günü",
-    (8, 30): "Zafer Bayramı",
-    (10, 29): "Cumhuriyet Bayramı",
-}
-
-def calculate_macros(dish_name: str, kcal: int = 0):
-    """Yemek ismine ve kalorisine göre protein, karbonhidrat, yağ hesaplar"""
-    name_lower = dish_name.lower()
-    if kcal == 0:
-        if "çorba" in name_lower: kcal = 135
-        elif any(k in name_lower for k in ["nohut", "fasulye", "türlü", "güveç"]): kcal = 320
-        elif any(k in name_lower for k in ["köfte", "döner", "sote", "kebab", "baget", "cordon"]): kcal = 420
-        elif any(k in name_lower for k in ["pilav", "makarna", "börek"]): kcal = 280
-        elif any(k in name_lower for k in ["tatlı", "helva", "tulumba", "puding"]): kcal = 290
-        elif "ayran" in name_lower or "cacık" in name_lower: kcal = 85
-        else: kcal = 200
-
-    if "çorba" in name_lower:
-        p, c, f = max(3, int(kcal * 0.12 / 4)), max(15, int(kcal * 0.60 / 4)), max(2, int(kcal * 0.28 / 9))
-    elif any(k in name_lower for k in ["döner", "kebab", "et", "tavuk", "köfte", "cordon", "nohut", "sote", "baget"]):
-        p, c, f = max(20, int(kcal * 0.35 / 4)), max(10, int(kcal * 0.25 / 4)), max(10, int(kcal * 0.40 / 9))
-    elif any(k in name_lower for k in ["pilav", "makarna", "börek"]):
-        p, c, f = max(5, int(kcal * 0.10 / 4)), max(45, int(kcal * 0.70 / 4)), max(4, int(kcal * 0.20 / 9))
-    elif "ayran" in name_lower or "cacık" in name_lower:
-        p, c, f = 4, 5, 4
-    elif any(k in name_lower for k in ["tatlı", "helva", "tulumba", "irmik"]):
-        p, c, f = 3, max(40, int(kcal * 0.75 / 4)), max(5, int(kcal * 0.20 / 9))
-    else:
-        p, c, f = max(4, int(kcal * 0.15 / 4)), max(20, int(kcal * 0.50 / 4)), max(3, int(kcal * 0.35 / 9))
-
-    return {"name": dish_name, "kcal": kcal, "protein": f"{p}g", "carb": f"{c}g", "fat": f"{f}g"}
-
-# Ekim 2026 Doğrulanmış SAÜ Yemek Menüleri
-OCTOBER_2026_EXACT_MENUS = {
-    1: ["Mercimek Çorbası", "Fırın Tavuk Baget", "Pirinç Pilavı", "Taze Ayran"],
-    2: ["Domates Çorbası", "İzmir Köfte", "Bulgur Pilavı", "Mevsim Salata"],
-    5: ["Ezogelin Çorbası", "Etli Kuru Fasulye", "Pirinç Pilavı", "Cacık"],
-    6: ["Tarhana Çorbası", "Tavuk Sote", "Soslu Makarna", "Meyve (Elma)"],
-    19: ["Yayla Çorbası", "Tas Kebabı", "Pirinç Pilavı", "Ayran"],
-    20: ["Sebze Çorbası", "Tavuk Sote", "Bulgur Pilavı", "Cacık"],
-    21: ["Mercimek Çorbası", "Tavuk Sote", "Pirinç Pilavı", "Mevsim Salata"],
-    22: ["Ezogelin Çorbası", "Etli Kuru Fasulye", "Bulgur Pilavı", "Cacık"],
-    23: ["Yayla Çorbası", "Kadınbudu Köfte", "Soslu Makarna", "Meyve (Elma)"],
-    26: ["Mahluta Çorba", "Etli Nohut", "Tavuk Cordon Bleu", "Sade Pirinç Pilavı", "Tulumba Tatlısı"],
-    27: ["Sebze Çorba", "Gar.Et Döner", "Abant Kebabı", "Bulgur Pilavı", "Ayran"],
-    30: ["Tarhana Çorbası", "Fırın Köfte", "Pirinç Pilavı", "İrmik Helvası"]
-}
-
-def fetch_sau_menu_by_date(target_date: date):
-    """Tarihe göre resmi SAÜ yemekhanesindeki menüyü getirir (Scraping + Veritabanı Yedekli)"""
-    if target_date.weekday() in (5, 6):
-        return None, "HAFTA_SONU"
-
-    tatil = SABIT_TATILLER.get((target_date.month, target_date.day))
-    if tatil:
-        return None, f"RESMI_TATIL:{tatil}"
-
-    # 1. Öncelikli Veritabanı Kontrolü (Hata riskini sıfırlar)
-    if target_date.month == 10 and target_date.day in OCTOBER_2026_EXACT_MENUS:
-        raw_dishes = OCTOBER_2026_EXACT_MENUS[target_date.day]
-        items = [calculate_macros(dish) for dish in raw_dishes]
-        return items, "OK"
-
-    # 2. Canlı SABİS Scraping İncelemesi
+def fetch_today_menu_summary():
+    """AI Chatbot bağlamı için bugünün menü özetini güvenli çeker"""
+    today_dt = date.today()
+    if today_dt.weekday() in (5, 6):
+        return "Hafta sonu nedeniyle yemekhanede yemek servisi yapılmamaktadır."
+    if today_dt.month == 10 and today_dt.day in [28, 29]:
+        return "28-29 Ekim Arefe ve Cumhuriyet Bayramı resmi tatili nedeniyle yemekhane kapalıdır."
+    
     try:
-        url = f"https://menu.sabis.sakarya.edu.tr/?tarih={target_date.strftime('%Y-%m-%d')}"
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        url = "https://menu.sabis.sakarya.edu.tr/"
+        headers = {"User-Agent": "Mozilla/5.0"}
         r = requests.get(url, headers=headers, timeout=3)
         if r.status_code == 200:
             soup = BeautifulSoup(r.text, "html.parser")
             items = []
-            reject_words = ["menü", "sabis", "sakarya", "çıkış", "giriş", "diyet", "kullanıcı", "günlük"]
-            for elem in soup.find_all(['div', 'td', 'li', 'p']):
-                if len(elem.find_all(['div', 'td'])) == 0:
-                    txt = elem.get_text(strip=True)
-                    if txt and 3 < len(txt) < 60 and not any(w in txt.lower() for w in reject_words):
-                        if not re.search(r'\d{2,}', txt): # Sayı içeren tarihler hariç
-                            items.append(calculate_macros(txt))
-            if len(items) >= 2:
-                return items, "OK"
-    except Exception as e:
-        print(f"Scraping Hatası: {e}")
-
-    # 3. Genel Varsayılan Menü (Hafta içi boş kalmasını önler)
-    default_dishes = ["Günün Çorbası", "Ana Yemek (Et/Tavuk)", "Pilav / Makarna", "Salata / Tatlı / Ayran"]
-    return [calculate_macros(d) for d in default_dishes], "OK"
+            for elem in soup.find_all(['p', 'span', 'td', 'div']):
+                t = elem.get_text(strip=True)
+                if any(w in t.lower() for w in ['çorba', 'döner', 'kebap', 'pilav', 'köfte', 'nohut', 'sote']):
+                    if t not in items and len(t) < 50:
+                        items.append(t)
+            if items:
+                return "\n".join([f"• {item}" for item in items[:5]])
+    except Exception:
+        pass
+    return "SABİS canlı menüsü için Yemekhane sekmesini ziyaret edebilirsiniz."
 
 # ==========================================
 # 6. AKADEMİK BİLGİ TABANI (KNOWLEDGE BASE)
@@ -317,11 +235,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     if not client:
         return "⚠️ GROQ_API_KEY bulunamadı. Lütfen Hugging Face Secrets alanına GROQ_API_KEY ekleyin."
 
-    menu_items, status = fetch_sau_menu_by_date(date.today())
-    if menu_items and status == "OK":
-        menu_summary = "\n".join([f"• {m['name']} ({m['kcal']} kcal - P:{m['protein']} C:{m['carb']} F:{m['fat']})" for m in menu_items])
-    else:
-        menu_summary = "Bugün için SABİS'te yayınlanmış yemek menüsü yok (Hafta Sonu / Resmi Tatil)."
+    menu_summary = fetch_today_menu_summary()
 
     system_prompt = f"""
     Sen Sakarya Üniversitesi (SAÜ) öğrencilerinin resmi Akıllı Kampüs Asistanısın. Öğrencilerin zaman kaybetmeden doğru bilgiye ulaşmalarını sağlamak senin ana görevindir.
@@ -331,7 +245,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     - Bölüm: {student_dept if student_dept else "Belirtilmedi"}
 
     [GÜNCEL SİSTEM VERİLERİ]
-    🌐 BUGÜNKÜ SABİS YEMEK MENÜSÜ VE BESİN DEĞERLERİ:
+    🌐 BUGÜNKÜ SABİS YEMEK MENÜSÜ:
     {menu_summary}
 
     📘 SAÜ AKADEMİK BİLGİ TABANI & REHBERİ:
@@ -414,7 +328,7 @@ st.caption(f"Aktif Öğrenci Bağlamı: **{faculty}** {f'({department})' if depa
 
 tab_chat, tab_food, tab_cafe, tab_bus, tab_calc = st.tabs([
     "💬 Akıllı AI Asistan", 
-    "🍱 Yemekhane & Besin Değerleri", 
+    "🍱 SABİS Canlı Yemek Menüsü", 
     "☕ Kafe Yoğunluk Analizi", 
     "🚌 Ulaşım & SAKUS", 
     "🧮 Not & Baraj Hesapla"
@@ -486,97 +400,18 @@ with tab_chat:
         st.session_state.messages.append(assistant_msg)
 
 # ------------------------------------------
-# SEKME 2: YEMEKHANE & BESİN DEĞERLERİ
+# SEKME 2: YEMEKHANE & DIREKT CANLI SABIS SAYFASI
 # ------------------------------------------
 with tab_food:
-    st.subheader("🍱 SABİS Yemek Menüsü & Canlı Entegrasyon")
+    st.subheader("🍱 SABİS Canlı Yemek Menüsü")
+    st.caption("Sakarya Üniversitesi resmi SABİS yemek menüsü sistemi doğrudan ve canlı olarak entegre edilmiştir.")
+
+    # Doğrudan canlı SABİS sayfasını pürüzsüz iframe penceresi olarak göm
+    st.components.v1.iframe("https://menu.sabis.sakarya.edu.tr/", height=680, scrolling=True)
     
-    # Hızlı Gün Seçimi ve Görsel Kip Tercihi
-    col_view1, col_view2 = st.columns([2, 1])
-    with col_view1:
-        view_mode = st.radio(
-            "Görünüm Modu Seçin:",
-            ["✨ Akıllı Kart Görünümü (Makro & İkonlar)", "🌐 Canlı SABİS Sayfası (%100 Birebir Entegre)"],
-            horizontal=True
-        )
-    with col_view2:
-        today = date.today()
-        first_day = date(today.year, today.month, 1)
-        _, last_day_num = calendar.monthrange(today.year, today.month)
-        last_day = date(today.year, today.month, last_day_num)
-        
-        selected_date = st.date_input(
-            "🗓️ Tarih Seçin",
-            value=today,
-            min_value=first_day,
-            max_value=last_day,
-            key="food_tab_date_picker"
-        )
+    st.markdown("---")
+    st.link_button("🌐 SABİS Menü Sayfasını Yeni Sekmede Aç", "https://menu.sabis.sakarya.edu.tr/", use_container_width=True)
 
-    tarih_str = f"{selected_date.day} {AYLAR_TR[selected_date.month - 1]} {GUNLER_TR[selected_date.weekday()]}"
-
-    # MOD 1: CANLI SABİS GÖMÜLÜ EKRAN (Hata İhtimali Sıfır)
-    if "Canlı SABİS" in view_mode:
-        st.info(f"🔗 **{tarih_str}** için doğrudan SABİS resmi sunucusundan canlı çekilen menü ekranı:")
-        sabis_iframe_url = f"https://menu.sabis.sakarya.edu.tr/?tarih={selected_date.strftime('%Y-%m-%d')}"
-        
-        # Şık yuvarlatılmış gölgeli iframe konteyneri
-        st.components.v1.iframe(sabis_iframe_url, height=520, scrolling=True)
-
-    # MOD 2: AKILLI ŞIK KARTLAR & BESİN DEĞERLERİ
-    else:
-        menu_items, status = fetch_sau_menu_by_date(selected_date)
-
-        if status == "HAFTA_SONU":
-            st.warning(f"⚠️ **{tarih_str}** hafta sonuna denk gelmektedir. Hafta sonları yemekhane kapalıdır.")
-        elif status.startswith("RESMI_TATIL"):
-            ad = status.split(":", 1)[1] if ":" in status else "Resmi Tatil"
-            st.warning(f"🇹🇷 **{tarih_str} ({ad})** nedeniyle yemekhane kapalıdır.")
-        elif status == "NO_DATA" or not menu_items:
-            st.info(f"ℹ️ **{tarih_str}** için henüz SABİS'e menü girişi yapılmamıştır.")
-        else:
-            total_kcal = sum([item.get('kcal', 0) for item in menu_items])
-            daily_percentage = min(100, int((total_kcal / 2000) * 100))
-            
-            # Üst Özet ve Kalori İlerleme Çubuğu
-            st.success(f"💡 **{tarih_str} Menüsü Toplam Kalorisi:** ~{total_kcal} kcal")
-            st.caption(f"Günlük Ortalama Enerji İhtiyacının (2000 kcal) **%{daily_percentage}** kadarını karşılıyor:")
-            st.progress(daily_percentage / 100.0)
-            st.markdown("<br>", unsafe_allow_html=True)
-
-            # Yemek Kartları (İkon Filtreli)
-            for item in menu_items:
-                name = item['name']
-                name_lower = name.lower()
-                
-                # Otomatik İkon Atama
-                icon = "🍽️"
-                if "çorba" in name_lower: icon = "🥣"
-                elif any(k in name_lower for k in ["köfte", "döner", "tavuk", "et", "kebap", "sote", "baget", "cordon"]): icon = "🍗"
-                elif any(k in name_lower for k in ["pilav", "makarna", "börek"]): icon = "🍚"
-                elif any(k in name_lower for k in ["tatlı", "helva", "tulumba", "irmik", "puding"]): icon = "🍰"
-                elif "ayran" in name_lower or "cacık" in name_lower: icon = "🥤"
-                elif "salata" in name_lower or "meyve" in name_lower: icon = "🥗"
-
-                st.markdown(f"""
-                <div class="info-card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h4 style="margin:0 0 6px 0; color:#002855;">{icon} {name}</h4>
-                        <div>
-                            <span class="macro-badge">🔥 {item.get('kcal', 200)} kcal</span>
-                            <span class="macro-badge">🥩 Protein: {item.get('protein', '10g')}</span>
-                            <span class="macro-badge">🌾 Karbonhidrat: {item.get('carb', '35g')}</span>
-                            <span class="macro-badge">🥑 Yağ: {item.get('fat', '8g')}</span>
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # Etkileşimli Öğrenci Beğeni Widget'ı
-            st.markdown("---")
-            st.write("💬 **Bugünkü menüyü nasıl buldun?**")
-            st.feedback("stars", key=f"menu_feedback_{selected_date}")
-            
 # ------------------------------------------
 # SEKME 3: KAFE YOĞUNLUK ANALİZİ
 # ------------------------------------------
