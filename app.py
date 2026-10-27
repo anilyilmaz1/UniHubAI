@@ -1,6 +1,6 @@
 import streamlit as st
 
-# --- 1. SAYFA YAPILANDIRMASI ---
+# 1. Sayfa Yapısı
 st.set_page_config(
     page_title="UniHub AI - Sakarya Üniversitesi",
     page_icon="🎓",
@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. ÖZEL TEMA VE RENK DÜZENLEMESİ (Custom CSS) ---
+# 2. Tema ve Renk Düzenlemesi
 st.markdown("""
 <style>
     /* Sol Menü (Sidebar) Lacivert Tema */
@@ -70,11 +70,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. SESSION STATE İLKELENDİRME ---
+# 3. Session State
 if "selected_question" not in st.session_state:
     st.session_state.selected_question = ""
 
-# --- 4. AÇILIR PENCERE (MODAL) ARIZA FORMU ---
+# 4. Açılır Pencere Arıza Formu
 @st.dialog("🛠️ Kampüs Sorun Bildirimi (Arıza / Takip)")
 def open_issue_modal():
     st.caption("Kampüsteki arıza ve taleplerinizi bu form aracılığıyla doğrudan iletebilirsiniz.")
@@ -99,7 +99,7 @@ def open_issue_modal():
         else:
             st.warning("Lütfen zorunlu alanları doldurunuz.")
 
-# --- 5. SOL MENÜ (SIDEBAR) ---
+# 5. Sidebar
 with st.sidebar:
     st.title("🌐 UniHub AI")
     st.caption("Geliştirici: Sakarya University GDG | Sürüm: 1.0")
@@ -122,7 +122,7 @@ with st.sidebar:
         if st.button(q, key=f"btn_{q}"):
             st.session_state.selected_question = q
 
-# --- 6. ANA EKRAN ---
+# 6. Ana Ekran
 st.markdown("""
 <div class="welcome-card">
     <h3>UniHub Asistanı 🎓</h3>
