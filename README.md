@@ -1,3 +1,14 @@
+---
+title: UniHub Academic AI
+emoji: 🎓
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+sdk_version: 1.35.0
+app_file: app.py
+pinned: false
+---
+
 # 🎓 UniHub Academic AI - Sakarya Üniversitesi Akıllı Kampüs Asistanı
 
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
@@ -32,5 +43,5 @@
 
 ### 1. Repoyu Klonlayın
 ```bash
-git clone [https://github.com/kullanici-adi/unihub-academic-ai.git](https://github.com/kullanici-adi/unihub-academic-ai.git)
-cd unihub-academic-ai
+git clone [https://github.com/anilyilmaz1/UniHubAI.git](https://github.com/anilyilmaz1/UniHubAI.git)
+cd UniHubAI
