@@ -103,7 +103,7 @@ def ask_groq_assistant(query: str) -> str:
     """
     try:
         completion = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
+            model="qwen/qwen3.8-27b",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
@@ -161,7 +161,7 @@ def process_issue_pipeline(raw_description: str, location: str, category: str, s
     """
     try:
         completion = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
+            model="qwen/qwen3.8-27b",
             messages=[{"role": "user", "content": pipeline_prompt}],
             response_format={"type": "json_object"},
             temperature=0.1
