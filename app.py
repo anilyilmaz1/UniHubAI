@@ -108,7 +108,7 @@ CAFE_HOURLY_DATA = {
     "Taş Kafe": [0, 5, 15, 30, 60, 75, 70, 65, 55, 45, 35, 20, 10, 0, 0, 0, 0, 0]
 }
 
-HOURS_LABELS = [f"{h:02d}" for h in range(6, 24)]  # 06 - 23 arası Google Maps stili
+HOURS_LABELS = [f"{h:02d}" for h in range(6, 24)]
 
 def get_current_cafe_density(cafe_name: str) -> tuple:
     current_hour = datetime.now().hour
@@ -126,17 +126,15 @@ def get_current_cafe_density(cafe_name: str) -> tuple:
         return density, "🟢 Sakin & Müsait", "Rahatça ders çalışabilir veya oturabilirsiniz."
 
 def render_google_maps_populer_saatler(cafe_name: str, day_name: str = "Salı günleri"):
-    """Google Maps 'Popüler Saatler' arayüzünün birebir Plotly visual karşılığı"""
     current_hour = datetime.now().hour
     raw_data = CAFE_HOURLY_DATA.get(cafe_name, [30]*18)
     
-    # Mevcut saati koyu turkuaz (#1d5d63), diğer saatleri standart Google Maps turkuazı (#528f95) yap
     bar_colors = []
     for h in range(6, 24):
         if h == current_hour:
-            bar_colors.append('#1d5d63')  # Aktif saat vurgusu
+            bar_colors.append('#1d5d63')
         else:
-            bar_colors.append('#528f95')  # Standart Google Maps sütun rengi
+            bar_colors.append('#528f95')
 
     fig = go.Figure(data=[
         go.Bar(
@@ -149,7 +147,6 @@ def render_google_maps_populer_saatler(cafe_name: str, day_name: str = "Salı g�
         )
     ])
 
-    # Google Maps Eksen ve Layout Stili
     fig.update_layout(
         title=dict(
             text=f"<b>Popüler saatler</b> &nbsp;&nbsp;<span style='font-size:13px; color:#5f6368;'>({day_name})</span>",
@@ -356,7 +353,7 @@ tab_chat, tab_food, tab_cafe, tab_bus, tab_calc = st.tabs([
 ])
 
 # ------------------------------------------
-# SEKME 1: AKILLI CHATBOT (GRAFİK ENTEGRASYONLU)
+# SEKME 1: AKILLI CHATBOT (BENZERSİZ KEY PARAMETRELERİ İLE)
 # ------------------------------------------
 with tab_chat:
     st.markdown("##### ⚡ Hızlı Sorular:")
@@ -376,13 +373,12 @@ with tab_chat:
         if st.button("🧮 Vize 45 Aldım Geçer miyim?", use_container_width=True):
             prompt_to_send = "Vizeden 45 aldım, dersten CC ile geçmek için finalden kaç almam lazım?"
 
-    for message in st.session_state.messages:
+    for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-            # Eğer sohbet mesajında kafe yoğunluğu sorulduysa altına Google Maps grafiğini bas
             if "cafe_chart" in message:
                 fig_chat = render_google_maps_populer_saatler(message["cafe_chart"])
-                st.plotly_chart(fig_chat, use_container_width=True, config={'displayModeBar': False})
+                st.plotly_chart(fig_chat, use_container_width=True, config={'displayModeBar': False}, key=f"chat_hist_chart_{idx}")
 
     user_query = st.chat_input("Akademik takvim, staj, not hesabı veya kampüs hakkında sorun...")
     if prompt_to_send:
@@ -399,7 +395,6 @@ with tab_chat:
                 response_text = generate_academic_response(history_for_api, faculty, department)
                 st.markdown(response_text)
                 
-                # Kafe sorgusu algılanırsa sohbet içinde Google Maps grafiğini göster
                 matched_cafe = None
                 query_lower = user_query.lower()
                 if "lumo" in query_lower:
@@ -416,7 +411,8 @@ with tab_chat:
                 assistant_msg = {"role": "assistant", "content": response_text}
                 if matched_cafe:
                     fig_inline = render_google_maps_populer_saatler(matched_cafe)
-                    st.plotly_chart(fig_inline, use_container_width=True, config={'displayModeBar': False})
+                    chart_key = f"inline_chart_{len(st.session_state.messages)}"
+                    st.plotly_chart(fig_inline, use_container_width=True, config={'displayModeBar': False}, key=chart_key)
                     assistant_msg["cafe_chart"] = matched_cafe
 
         st.session_state.messages.append(assistant_msg)
@@ -447,7 +443,7 @@ with tab_food:
         """, unsafe_allow_html=True)
 
 # ------------------------------------------
-# SEKME 3: KAFE YOĞUNLUK ANALİZİ (GOOGLE MAPS EŞ EŞİT TASARIM)
+# SEKME 3: KAFE YOĞUNLUK ANALİZİ
 # ------------------------------------------
 with tab_cafe:
     st.subheader("☕ Kampüs Kafeleri Canlı & Saatlik Yoğunluk Analizi")
@@ -477,7 +473,7 @@ with tab_cafe:
     with c_col2:
         st.markdown('<div class="gmaps-card">', unsafe_allow_html=True)
         fig_gmaps = render_google_maps_populer_saatler(selected_cafe, selected_day)
-        st.plotly_chart(fig_gmaps, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig_gmaps, use_container_width=True, config={'displayModeBar': False}, key="tab_cafe_main_chart")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------------------------------
