@@ -337,7 +337,7 @@ SAU_AKADEMIK_BILGI = """
 
 [SAÜ NOT SİSTEMİ VE BARAJ DERS KURALLARI]
 - Standart Oranlar: Vize %40, Final %60.
-- FİNAL BARAJI KURALI: Öğrencinin dersten geçebilmesi için Final veya Bütünleme sınavından EN AZ 50 ALMASI ZORUNLUDUR! (Yıl içi ortalaması 90 bile olsa final 49 ise dersten FF ile kalır).
+- FİNAL BARAJI KURALI: Öğrencinin dersten geçebilmesi için Final veya Bütünleme sınavından EN AZ 40 ALMASI ZORUNLUDUR! (Yıl içi ortalaması 90 bile olsa final 39 ise dersten FF ile kalır).
 - Harf Notu Sınırları: AA (90-100), BA (85-89), BB (75-84), CB (65-74), CC (50-64 Standart Geçer), DC (45-49 Şartlı), DD (40-44 Şartlı), FF (0-39 Kaldı).
 
 [FAKÜLTE VE BÖLÜM BAZLI STAJ YÖNERGELERİ]
@@ -380,7 +380,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     {SAU_AKADEMIK_BILGI}
 
     [MİSYON VE YANIT KURALLARI]
-    1. Not hesaplama sorularında matematiği yap: (Vize*%40) + (Final*%60) = 50 formülünü kullan. SAÜ'nün **FİNALDEN EN AZ 50 ALMA BARAJI** kuralını belirt!
+    1. Not hesaplama sorularında matematiği yap: (Vize*%40) + (Final*%60) = 50 formülünü kullan. SAÜ'nün **FİNALDEN EN AZ 40 ALMA BARAJI** kuralını belirt!
     2. Staj sorularında öğrencinin seçtiği fakülte/bölüm yönergesine sadık kal.
     3. Kafe yoğunluğu sorulursa saatlik doluluk durumunu özetle.
     4. Yanıtların net, sevimli, motive edici, maddeler (**bold**) halinde ve %100 doğru olsun.
@@ -691,11 +691,11 @@ with tab_bus:
             """, unsafe_allow_html=True)
 
 # ------------------------------------------
-# SEKME 5: GELİŞMİŞ NOT, PROJE & HARF NOTU HESAPLAYICI
+# SEKME 5: GELİŞMİŞ NOT, PROJE & HARF NOTU HESAPLAYICI (40 BARAJLI)
 # ------------------------------------------
 with tab_calc:
     st.subheader("🧮 SAÜ Gelişmiş Not, Proje & Harf Notu Hesaplayıcı")
-    st.warning("⚠️ **SAÜ Final Barajı Kuralı:** Yıl içi not ortalamanız kaç olursa olsun, dersten geçebilmek için **Final sınavından EN AZ 50 puan** alma şartı vardır.")
+    st.warning("⚠️ **SAÜ Final Barajı Kuralı:** Yıl içi not ortalamanız kaç olursa olsun, dersten geçebilmek için **Final sınavından EN AZ 40 puan** alma şartı vardır.")
 
     # 1. HEDEF HARF NOTU SEÇİMİ
     st.markdown("### 1️⃣ Hedef Harf Notunu Seçin")
@@ -708,28 +708,33 @@ with tab_calc:
     st.info(f"🎯 **Seçilen Harf Notu Hedef Puanı:** **{target_score}** / 100")
 
     st.markdown("---")
-    st.markdown("### 2️⃣ Yıl İçi Değerlendirme Bileşenleri (Vize, Proje, Lab vb.)")
+    st.markdown("### 2️⃣ Yıl İçi Değerlendirme Bileşenleri (Vize & 3 Adet Opsiyonel Ödev/Proje)")
 
-    # 2. BİLEŞEN GİRDİLERİ
-    c_vize, c_proje, c_lab = st.columns(3)
-    
-    with c_vize:
+    # 2. BİLEŞEN GİRDİLERİ (2x2 GRID)
+    col_vize, col_ek1 = st.columns(2)
+    with col_vize:
         st.markdown("##### 📝 Vize Sınavı")
         vize_not = st.number_input("Vize Notunuz", min_value=0.0, max_value=100.0, value=60.0, step=1.0)
-        vize_oran = st.slider("Vize Etki Oranı (%)", min_value=10, max_value=80, value=40, step=5)
+        vize_oran = st.slider("Vize Etki Oranı (%)", min_value=10, max_value=80, value=30, step=5)
 
-    with c_proje:
-        st.markdown("##### 💻 Proje / Ödev (Opsiyonel)")
-        proje_not = st.number_input("Proje / Ödev Notunuz", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
-        proje_oran = st.slider("Proje/Ödev Etki Oranı (%)", min_value=0, max_value=50, value=0, step=5)
+    with col_ek1:
+        st.markdown("##### 💻 1. Ödev / Proje (Opsiyonel)")
+        proje1_not = st.number_input("1. Ödev/Proje Notunuz", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
+        proje1_oran = st.slider("1. Ödev/Proje Etki Oranı (%)", min_value=0, max_value=40, value=0, step=5)
 
-    with c_lab:
-        st.markdown("##### 🧪 Lab / Quiz (Opsiyonel)")
-        lab_not = st.number_input("Lab / Quiz Notunuz", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
-        lab_oran = st.slider("Lab/Quiz Etki Oranı (%)", min_value=0, max_value=50, value=0, step=5)
+    col_ek2, col_ek3 = st.columns(2)
+    with col_ek2:
+        st.markdown("##### 📁 2. Ödev / Proje (Opsiyonel)")
+        proje2_not = st.number_input("2. Ödev/Proje Notunuz", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
+        proje2_oran = st.slider("2. Ödev/Proje Etki Oranı (%)", min_value=0, max_value=40, value=0, step=5)
+
+    with col_ek3:
+        st.markdown("##### 🧪 3. Ödev / Lab / Quiz (Opsiyonel)")
+        proje3_not = st.number_input("3. Ödev/Lab Notunuz", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
+        proje3_oran = st.slider("3. Ödev/Lab Etki Oranı (%)", min_value=0, max_value=40, value=0, step=5)
 
     # Toplam Yıl İçi Oranı ve Otomatik Final Oranı Hesaplama
-    total_yilici_oran = vize_oran + proje_oran + lab_oran
+    total_yilici_oran = vize_oran + proje1_oran + proje2_oran + proje3_oran
     final_oran = 100 - total_yilici_oran
 
     st.markdown("---")
@@ -742,10 +747,11 @@ with tab_calc:
         if st.button("🧮 Gereken Final Sınavı Notunu Hesapla", use_container_width=True):
             # Yıl içi kazanılan toplam puanlar
             vize_puan = vize_not * (vize_oran / 100.0)
-            proje_puan = proje_not * (proje_oran / 100.0)
-            lab_puan = lab_not * (lab_oran / 100.0)
-            
-            kazanilan_puan = vize_puan + proje_puan + lab_puan
+            p1_puan = proje1_not * (proje1_oran / 100.0)
+            p2_puan = proje2_not * (proje2_oran / 100.0)
+            p3_puan = proje3_not * (proje3_oran / 100.0)
+
+            kazanilan_puan = vize_puan + p1_puan + p2_puan + p3_puan
             gereken_puan = target_score - kazanilan_puan
             req_final = gereken_puan / (final_oran / 100.0)
 
@@ -759,22 +765,23 @@ with tab_calc:
                 <div class="info-card">
                     <h4>📥 Cebinizdeki Puanlar (Şu Ana Kadar)</h4>
                     <p>• Vize Katkısı: <b>{vize_puan:.2f} puan</b> (%{vize_oran})</p>
-                    <p>• Proje/Ödev Katkısı: <b>{proje_puan:.2f} puan</b> (%{proje_oran})</p>
-                    <p>• Lab/Quiz Katkısı: <b>{lab_puan:.2f} puan</b> (%{lab_oran})</p>
+                    <p>• 1. Ödev/Proje Katkısı: <b>{p1_puan:.2f} puan</b> (%{proje1_oran})</p>
+                    <p>• 2. Ödev/Proje Katkısı: <b>{p2_puan:.2f} puan</b> (%{proje2_oran})</p>
+                    <p>• 3. Ödev/Lab Katkısı: <b>{p3_puan:.2f} puan</b> (%{proje3_oran})</p>
                     <hr style="margin:8px 0;">
                     <p style="font-size:16px;"><b>Toplam Yıl İçi Birikimi:</b> <span style="color:#002855; font-weight:700;">{kazanilan_puan:.2f} / {total_yilici_oran} puan</span></p>
                 </div>
                 """, unsafe_allow_html=True)
 
             with r_col2:
-                # Durum Değerlendirme Kartı
-                if req_final < 50:
+                # Durum Değerlendirme Kartı (SAÜ Final Barajı = 40)
+                if req_final < 40:
                     st.markdown(f"""
                     <div class="info-card" style="border-left-color:#eab308;">
                         <h4 style="color:#854d0e;">⚠️ SAÜ Final Barajı Kuralı Devrede</h4>
-                        <p>Matematiksel hesaplamaya göre <b>{selected_letter.split(' ')[0]}</b> almak için <b>{req_final:.1f}</b> almanız yeterli görünse de;</p>
-                        <p><b>SAÜ kuralı gereği Final sınavından EN AZ 50.0 almanız şarttır!</b></p>
-                        <h3 style="color:#166534; margin:10px 0 0 0;">🎯 Finalde Almanız Gereken Not: 50.0</h3>
+                        <p>Matematiksel olarak <b>{selected_letter.split(' ')[0]}</b> almak için <b>{req_final:.1f}</b> almanız yeterli görünse de;</p>
+                        <p><b>SAÜ kuralı gereği Final sınavından EN AZ 40.0 almanız şarttır!</b></p>
+                        <h3 style="color:#166534; margin:10px 0 0 0;">🎯 Finalde Almanız Gereken Asgari Not: 40.0</h3>
                     </div>
                     """, unsafe_allow_html=True)
                 elif req_final > 100:
