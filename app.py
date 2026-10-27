@@ -87,44 +87,108 @@ st.markdown("""
         border: 1px solid #e2e8f0;
         margin-bottom: 15px;
     }
+    .tag-badge {
+        background-color: #e2e8f0;
+        color: #0f172a;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-right: 6px;
+        display: inline-block;
+        margin-top: 6px;
+    }
+    .recommend-card {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-left: 6px solid #16a34a;
+        padding: 14px 18px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. KAFE YOĞUNLUK VERİ TABANI & GOOGLE MAPS GRAFİK MOTORU
+# 4. KAFE YOĞUNLUK VERİ TABANI & DİNAMİK GRAFİK MOTORU
 # ==========================================
-CAFE_HOURLY_DATA = {
-    "Lumo Coffee": [0, 5, 15, 35, 65, 85, 95, 90, 80, 70, 55, 30, 15, 5, 0, 0, 0, 0],
-    "Coffy SAÜ": [0, 10, 25, 50, 80, 95, 90, 85, 75, 85, 90, 60, 30, 10, 0, 0, 0, 0],
-    "Adıbahçe": [0, 0, 10, 20, 45, 70, 80, 85, 90, 95, 85, 65, 35, 10, 0, 0, 0, 0],
-    "Taş Kafe": [0, 5, 15, 30, 60, 75, 70, 65, 55, 45, 35, 20, 10, 0, 0, 0, 0, 0]
+CAFE_DATABASE = {
+    "Taş Kafe": {
+        "tags": ["🔌 Bol Priz", "📶 SAÜ Wifi", "☕ Demleme Çay", "🌳 Açık Bahçe"],
+        "weekday": [0, 5, 15, 35, 65, 85, 95, 90, 80, 70, 55, 30, 15, 5, 0, 0, 0, 0],
+        "friday":  [0, 5, 20, 45, 75, 90, 85, 95, 85, 75, 60, 40, 20, 5, 0, 0, 0, 0],
+        "weekend": [0, 0, 5, 10, 25, 40, 55, 60, 50, 40, 30, 15, 5, 0, 0, 0, 0, 0]
+    },
+    "Lumo Coffee": {
+        "tags": ["☕ Nitelikli Kahve", "🔌 Çalışma Masaları", "❄️ Klima", "🎵 Hafif Müzik"],
+        "weekday": [0, 10, 25, 50, 80, 95, 90, 85, 75, 85, 90, 60, 30, 10, 0, 0, 0, 0],
+        "friday":  [0, 15, 30, 60, 85, 98, 95, 90, 80, 90, 85, 50, 25, 10, 0, 0, 0, 0],
+        "weekend": [0, 5, 15, 30, 50, 65, 75, 70, 65, 60, 45, 25, 10, 0, 0, 0, 0, 0]
+    },
+    "Coffy SAÜ": {
+        "tags": ["⚡ Hızlı Sipariş", "💳 Sabit Fiyat", "🔌 Priz Alanı", "🚶‍♂️ Al-Git Pratik"],
+        "weekday": [0, 15, 35, 60, 85, 90, 80, 75, 85, 90, 70, 45, 20, 5, 0, 0, 0, 0],
+        "friday":  [0, 20, 40, 70, 90, 95, 85, 80, 90, 95, 75, 50, 25, 5, 0, 0, 0, 0],
+        "weekend": [0, 5, 20, 35, 55, 70, 65, 60, 55, 50, 35, 15, 5, 0, 0, 0, 0, 0]
+    },
+    "Adıbahçe": {
+        "tags": ["🍔 Geniş Menü", "🛋️ Konforlu Koltuklar", "🗣️ Grup Çalışması", "📺 Maç Yayınları"],
+        "weekday": [0, 0, 10, 20, 45, 70, 80, 85, 90, 95, 85, 65, 35, 10, 0, 0, 0, 0],
+        "friday":  [0, 0, 15, 30, 55, 80, 90, 95, 98, 95, 90, 70, 40, 15, 0, 0, 0, 0],
+        "weekend": [0, 0, 10, 25, 40, 60, 75, 85, 90, 85, 70, 45, 20, 5, 0, 0, 0, 0]
+    },
+    "Espressolab SAÜ": {
+        "tags": ["☕ Özel Harman Kahve", "🔌 Bol Priz & USB", "🤫 Sessiz Çalışma Katı", "🥐 Taze Pastane"],
+        "weekday": [0, 10, 30, 65, 90, 98, 95, 90, 85, 95, 90, 75, 40, 15, 0, 0, 0, 0],
+        "friday":  [0, 15, 35, 70, 95, 100, 95, 90, 90, 98, 92, 70, 35, 10, 0, 0, 0, 0],
+        "weekend": [0, 5, 20, 40, 65, 80, 85, 80, 75, 70, 55, 30, 10, 0, 0, 0, 0, 0]
+    },
+    "Merkez Kütüphane Kafe": {
+        "tags": ["🤫 Tam Sessiz Alan", "📚 Ders Çalışma Odaları", "🔌 Her Masada Priz", "🌙 24 Saat Açık"],
+        "weekday": [20, 15, 25, 45, 70, 85, 95, 100, 95, 90, 85, 75, 60, 50, 40, 35, 30, 25],
+        "friday":  [15, 10, 20, 40, 65, 80, 90, 90, 85, 80, 75, 65, 50, 40, 35, 30, 25, 20],
+        "weekend": [10, 10, 15, 30, 50, 65, 75, 80, 75, 70, 60, 50, 40, 30, 25, 20, 15, 10]
+    }
 }
 
 HOURS_LABELS = [f"{h:02d}" for h in range(6, 24)]
 
-def get_current_cafe_density(cafe_name: str) -> tuple:
-    current_hour = datetime.now().hour
-    if current_hour < 6 or current_hour >= 24:
-        return 0, "🟢 Kapalı / Sakin", "Şu an kafeler kapalı veya boş."
+def get_hourly_profile_by_day(cafe_name: str, day_name: str) -> list:
+    """Güne ve kafeye göre saatlik yoğunluk verisini döner"""
+    data = CAFE_DATABASE.get(cafe_name, {})
+    if "Cuma" in day_name:
+        return data.get("friday", [30]*18)
+    elif any(d in day_name for d in ["Cumartesi", "Pazar"]):
+        return data.get("weekend", [20]*18)
+    else:
+        return data.get("weekday", [30]*18)
+
+def get_cafe_density_info(cafe_name: str, day_name: str, target_hour: int) -> tuple:
+    """Seçilen saat ve güne göre yoğunluk durumunu hesaplar"""
+    profile = get_hourly_profile_by_day(cafe_name, day_name)
     
-    idx = current_hour - 6
-    density = CAFE_HOURLY_DATA.get(cafe_name, [30]*18)[idx]
+    if target_hour < 6 or target_hour >= 24:
+        if cafe_name == "Merkez Kütüphane Kafe":
+            return profile[target_hour if target_hour < 6 else 17], "🟡 Gece Çalışması Müsait", "Kütüphane Kafe 24 saat açıktır."
+        return 0, "🟢 Kapalı", "Şu an mekan kapalıdır."
+    
+    idx = target_hour - 6
+    density = profile[idx]
     
     if density >= 80:
-        return density, "🔴 Çok Yoğun (Pik Saat)", "Oturacak masa bulmak zor olabilir."
+        return density, "🔴 Çok Yoğun (Pik Saat)", "Masa bulmak zor olabilir, sıra bekleyebilirsiniz."
     elif density >= 50:
-        return density, "🟡 Orta Yoğunluk", "Masa bulunabilir, sipariş sırası makul."
+        return density, "🟡 Orta Yoğunluk", "Masa bulunabilir, çalışma ortamı makul."
     else:
         return density, "🟢 Sakin & Müsait", "Rahatça ders çalışabilir veya oturabilirsiniz."
 
-def render_google_maps_populer_saatler(cafe_name: str, day_name: str = "Salı günleri"):
-    current_hour = datetime.now().hour
-    raw_data = CAFE_HOURLY_DATA.get(cafe_name, [30]*18)
+def render_google_maps_populer_saatler(cafe_name: str, day_name: str, highlight_hour: int):
+    raw_data = get_hourly_profile_by_day(cafe_name, day_name)
     
     bar_colors = []
     for h in range(6, 24):
-        if h == current_hour:
-            bar_colors.append('#1d5d63')
+        if h == highlight_hour:
+            bar_colors.append('#1d5d63') # Seçili / Anlık saat vurgu rengi
         else:
             bar_colors.append('#528f95')
 
@@ -359,7 +423,7 @@ with tab_chat:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             if "cafe_chart" in message:
-                fig_chat = render_google_maps_populer_saatler(message["cafe_chart"])
+                fig_chat = render_google_maps_populer_saatler(message["cafe_chart"], "Salı günleri", datetime.now().hour)
                 st.plotly_chart(fig_chat, use_container_width=True, config={'displayModeBar': False}, key=f"chat_hist_chart_{idx}")
 
     user_query = st.chat_input("Akademik takvim, staj, not hesabı veya kampüs hakkında sorun...")
@@ -392,7 +456,7 @@ with tab_chat:
 
                 assistant_msg = {"role": "assistant", "content": response_text}
                 if matched_cafe:
-                    fig_inline = render_google_maps_populer_saatler(matched_cafe)
+                    fig_inline = render_google_maps_populer_saatler(matched_cafe, "Salı günleri", datetime.now().hour)
                     chart_key = f"inline_chart_{len(st.session_state.messages)}"
                     st.plotly_chart(fig_inline, use_container_width=True, config={'displayModeBar': False}, key=chart_key)
                     assistant_msg["cafe_chart"] = matched_cafe
@@ -406,44 +470,76 @@ with tab_food:
     st.subheader("🍱 SABİS Canlı Yemek Menüsü")
     st.caption("Sakarya Üniversitesi resmi SABİS yemek menüsü sistemi doğrudan ve canlı olarak entegre edilmiştir.")
 
-    # Doğrudan canlı SABİS sayfasını pürüzsüz iframe penceresi olarak göm
     st.components.v1.iframe("https://menu.sabis.sakarya.edu.tr/", height=680, scrolling=True)
     
     st.markdown("---")
     st.link_button("🌐 SABİS Menü Sayfasını Yeni Sekmede Aç", "https://menu.sabis.sakarya.edu.tr/", use_container_width=True)
 
 # ------------------------------------------
-# SEKME 3: KAFE YOĞUNLUK ANALİZİ
+# SEKME 3: DİNAMİK KAFE YOĞUNLUK ANALİZİ & ÖNERİ MOTORU
 # ------------------------------------------
 with tab_cafe:
     st.subheader("☕ Kampüs Kafeleri Canlı & Saatlik Yoğunluk Analizi")
-    st.caption("Google Maps 'Popüler Saatler' algoritması ve arayüzü ile kampüs kafelerinin doluluk durumları.")
+    st.caption("Google Maps 'Popüler Saatler' algoritması, güne özel doluluk eğrileri ve kampüs mekân önerileri.")
 
-    col_select1, col_select2 = st.columns([2, 1])
-    with col_select1:
-        selected_cafe = st.selectbox("İncelemek İstediğiniz Kafeyi Seçin", list(CAFE_HOURLY_DATA.keys()))
-    with col_select2:
+    # 1. Filtreleme ve Kontrol Paneli
+    col_filter1, col_filter2, col_filter3 = st.columns([2, 1.5, 1.5])
+    with col_filter1:
+        selected_cafe = st.selectbox("İncelemek İstediğiniz Kafeyi Seçin", list(CAFE_DATABASE.keys()))
+    with col_filter2:
         selected_day = st.selectbox("Gün Seçin", ["Salı günleri", "Pazartesi günleri", "Çarşamba günleri", "Perşembe günleri", "Cuma günleri", "Cumartesi günleri", "Pazar günleri"])
+    with col_filter3:
+        time_mode = st.radio("Saat Modu:", ["🔴 Anlık Saat", "🎛️ Özel Saat Seç"], horizontal=True)
 
-    density_val, status_str, status_desc = get_current_cafe_density(selected_cafe)
+    # Saat Tespiti
+    current_live_hour = datetime.now().hour
+    if "Özel Saat" in time_mode:
+        selected_hour = st.slider("İncelemek İstediğiniz Saati Seçin (06:00 - 23:00)", min_value=6, max_value=23, value=14, step=1)
+    else:
+        selected_hour = current_live_hour
+
+    # 2. Akıllı Öneri Kartı ("Şu An Nereye Gitmeliyim?")
+    best_cafe = None
+    lowest_density = 999
+    for c_name in CAFE_DATABASE.keys():
+        d_val, _, _ = get_cafe_density_info(c_name, selected_day, selected_hour)
+        if d_val < lowest_density and d_val > 0:
+            lowest_density = d_val
+            best_cafe = c_name
+
+    if best_cafe:
+        st.markdown(f"""
+        <div class="recommend-card">
+            <h4 style="margin:0; color:#166534;">💡 SAÜ Asistan Önerisi ({selected_day} - Saat {selected_hour:02d}:00)</h4>
+            <p style="margin:4px 0 0 0; color:#15803d;">Şu an kampüste ders çalışmak veya rahatça oturmak için <b>en sakin ve müsait mekân</b>: 
+            <b><u>{best_cafe}</u></b> (Doluluk Oranı: <b>%{lowest_density}</b>)</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 3. Seçili Kafe Analizi ve Detay Kartı
+    density_val, status_str, status_desc = get_cafe_density_info(selected_cafe, selected_day, selected_hour)
+    cafe_tags = CAFE_DATABASE.get(selected_cafe, {}).get("tags", [])
 
     c_col1, c_col2 = st.columns([1, 2])
     with c_col1:
+        tags_html = "".join([f'<span class="tag-badge">{t}</span>' for t in cafe_tags])
         st.markdown(f"""
         <div class="gmaps-card">
             <h3 style="margin:0; color:#202124;">{selected_cafe}</h3>
-            <h1 style="margin:10px 0 0 0; color:#1d5d63; font-size:42px;">%{density_val}</h1>
-            <p style="margin:0; font-weight:600;">Doluluk Oranı</p>
+            <p style="margin:2px 0 10px 0; color:#5f6368; font-size:13px;">Incelenen Saat: <b>{selected_hour:02d}:00</b> ({selected_day})</p>
+            <h1 style="margin:0; color:#1d5d63; font-size:44px;">%{density_val}</h1>
+            <p style="margin:0; font-weight:600; color:#374151;">Doluluk Oranı</p>
             <hr style="margin:12px 0;">
             <p style="margin:0; font-size:15px;"><strong>Durum:</strong> {status_str}</p>
-            <p style="margin:5px 0 0 0; color:#5f6368; font-size:13px;">{status_desc}</p>
+            <p style="margin:4px 0 10px 0; color:#5f6368; font-size:13px;">{status_desc}</p>
+            <div>{tags_html}</div>
         </div>
         """, unsafe_allow_html=True)
 
     with c_col2:
         st.markdown('<div class="gmaps-card">', unsafe_allow_html=True)
-        fig_gmaps = render_google_maps_populer_saatler(selected_cafe, selected_day)
-        st.plotly_chart(fig_gmaps, use_container_width=True, config={'displayModeBar': False}, key="tab_cafe_main_chart")
+        fig_gmaps = render_google_maps_populer_saatler(selected_cafe, selected_day, selected_hour)
+        st.plotly_chart(fig_gmaps, use_container_width=True, config={'displayModeBar': False}, key=f"tab_cafe_chart_{selected_cafe}_{selected_day}")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------------------------------
