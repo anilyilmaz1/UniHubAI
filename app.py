@@ -103,7 +103,7 @@ def ask_groq_assistant(query: str) -> str:
     """
     try:
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
@@ -161,7 +161,7 @@ def process_issue_pipeline(raw_description: str, location: str, category: str, s
     """
     try:
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": pipeline_prompt}],
             response_format={"type": "json_object"},
             temperature=0.1
