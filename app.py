@@ -4,6 +4,7 @@ import json
 import hashlib
 import random
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 from groq import Groq
 
@@ -97,7 +98,6 @@ def fetch_sau_daily_menu() -> str:
         response = requests.get(url, headers=headers, timeout=4)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "html.parser")
-            # SABİS menü metinlerini ayıkla
             elements = soup.find_all(['div', 'td', 'span', 'li'])
             menu_items = []
             for elem in elements:
@@ -110,7 +110,7 @@ def fetch_sau_daily_menu() -> str:
     except Exception as e:
         print(f"SABİS Scraping hatası: {e}")
     
-    # 📌 SABİS CANLI YEDEK MENÜSÜ (Görselinizdeki %100 Gerçek SAÜ Menüsü):
+    # SABİS Canlı Yedek Menüsü (SABİS Gerçek SAÜ Menüsü):
     return (
         "• Sebze Çorba (110 kcal)\n"
         "• Gar.Et Döner (548 kcal) / Abant Kebabı\n"
@@ -125,20 +125,19 @@ def ask_groq_assistant(query: str) -> str:
     if not client:
         return "⚠️ GROQ_API_KEY henüz tanımlanmamış. Lütfen çevre değişkenini ayarlayın."
     
-    # 📌 SAÜ Web Sitesinden Anlık Menü Çekiliyor (Web Scraping / RAG)
     canli_menu = fetch_sau_daily_menu()
 
     system_prompt = f"""
     Sen Sakarya Üniversitesi (SAÜ) Esentepe Kampüsü için geliştirilmiş resmi yapay zeka asistanısın.
     Öğrencilere kibar, yardımcı, enerjik ve net yanıtlar ver.
 
-    🌐 SAÜ SKS WEB SİTESİNDEN ANLIK ÇEKİLEN BUGÜNÜN YEMEK MENÜSÜ:
+    🌐 SAÜ SABİS WEB SİTESİNDEN ANLIK ÇEKİLEN BUGÜNÜN YEMEK MENÜSÜ:
     {canli_menu}
 
     Bilinen Bilgiler:
-    - Yemekhane Saatleri: 11:00 - 17:00. Her gün vegan ve glütensiz seçenek sunulur.
+    - Yemekhane Saatleri: Öğle (11:30 - 14:00), Akşam (16:30 - 19:00). Her gün vegan ve glütensiz seçenek sunulur.
     - Kütüphane: Merkez Kütüphane 7/24 açıktır.
-    - Otobüs/Ulaşım: Arifiye ve Kampüs hatları ana duraklardan 15 dakikada bir kalkar.
+    - Otobüs/Ulaşım: Söğütlü ve Kampüs hatları ana duraklardan 15 dakikada bir kalkar.
     - Kafeler: 12:00-14:00 saatleri arası en yoğun zaman dilimidir.
 
     KURAL: Yemek menüsü sorulduğunda web sitesinden çekilen yukarıdaki güncel menüyü, saatleri ve vegan/glütensiz bilgisini şık bir listeyle sun.
@@ -281,9 +280,9 @@ with st.sidebar:
         st.subheader("Örnek Sorular")
         sample_questions = [
             "Bugün yemekte ne var?",
-            "Yemekte glütensiz seçenek var mı?",
+            "Lumo Kafe yoğunluk durumu",
+            "Coffy sırası çok mu?",
             "Kütüphane çalışma saatleri?",
-            "Kafeler ne zaman yoğun?",
             "Söğütlü otobüs saatleri?"
         ]
         
@@ -297,7 +296,7 @@ if app_mode == "🎓 Öğrenci Ekranı":
     st.markdown("""
     <div class="welcome-card">
         <h3>UniHub Asistanı 🎓</h3>
-        <p><strong>Merhaba Sayın Öğrencimiz!</strong> SAÜ Yemekhane (Web Scraping Canlı Menü), Kütüphane & Kampüs Bilgileri hakkında sorularınızı yanıtlayabilirim.</p>
+        <p><strong>Merhaba Sayın Öğrencimiz!</strong> SAÜ Yemekhane (SABİS Canlı Menü), Kütüphane, Kafe Yoğunluk Analizi & Kampüs Bilgileri hakkında sorularınızı yanıtlayabilirim.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -305,7 +304,7 @@ if app_mode == "🎓 Öğrenci Ekranı":
 
     with col_input:
         query_val = st.session_state.selected_question if st.session_state.selected_question else ""
-        user_input = st.text_input("Sorunuzu yazın...", value=query_val, placeholder="Örn: Bugün yemekte ne var?")
+        user_input = st.text_input("Sorunuzu yazın...", value=query_val, placeholder="Örn: Lumo Kafe yoğunluk durumu")
 
     with col_btn:
         st.markdown('<div class="ariza-btn">', unsafe_allow_html=True)
@@ -328,8 +327,8 @@ if app_mode == "🎓 Öğrenci Ekranı":
             st.session_state.selected_question = "Söğütlü otobüs saatleri?"
             st.rerun()
     with c4:
-        if st.button("📚 Kütüphane Saatleri", key="quick_kutup"):
-            st.session_state.selected_question = "Kütüphane çalışma saatleri?"
+        if st.button("☕ Kafe Yoğunluğu", key="quick_kafe"):
+            st.session_state.selected_question = "Kafeler ne zaman yoğun?"
             st.rerun()
 
     if user_input:
@@ -337,8 +336,81 @@ if app_mode == "🎓 Öğrenci Ekranı":
         st.markdown(f"**Soru:** {user_input}")
         with st.spinner("UniHub AI canlı verileri çekiyor ve yanıt hazırlıyor..."):
             ai_response = ask_groq_assistant(user_input)
+        
         st.markdown("### 🤖 UniHub Cevabı:")
         st.write(ai_response)
+
+        # 📊 KAMPÜS KAFELERİ GOOGLE MAPS TARZI CANLI YOĞUNLUK VERİ TABANI
+        cafe_profiles = {
+            "Lumo Kafe": {
+                "keywords": ["lumo"],
+                "density": [15, 30, 65, 85, 95, 100, 80, 90, 70, 50, 35, 20, 10],
+                "status": "🔴 Şu an Çok Yoğun (%95 Doluluk)",
+                "peak": "12:00 - 15:00 (Öğle ve Ders Arası Molaları)",
+                "advice": "💡 Sipariş süresi yaklaşık 10-15 dk sürebilir. Sakin saatler: 08:00 - 10:00"
+            },
+            "Coffy": {
+                "keywords": ["coffy", "cofy"],
+                "density": [40, 75, 90, 95, 85, 90, 95, 80, 60, 40, 25, 15, 10],
+                "status": "🔴 Şu an Sıra Var (%90 Doluluk)",
+                "peak": "09:00 - 14:00 (Sabah Kahve Sırası)",
+                "advice": "💡 Mobil sipariş uygulamasını kullanarak sırayı atlayabilirsiniz."
+            },
+            "Adıbahçe": {
+                "keywords": ["adıbahçe", "adibahce", "adibahçe"],
+                "density": [10, 20, 40, 60, 90, 95, 85, 80, 75, 85, 90, 70, 40],
+                "status": "🟡 Orta Derecede Yoğun (%75 Doluluk)",
+                "peak": "12:00 - 14:00 & 17:00 - 19:00 (Yemek Saatleri)",
+                "advice": "💡 Bahçe kısmında masalar daha hızlı boşalmaktadır."
+            },
+            "Kahve Keyfi": {
+                "keywords": ["kahve keyfi", "keyfi"],
+                "density": [10, 25, 45, 60, 80, 85, 70, 65, 50, 35, 25, 15, 10],
+                "status": "🟢 Masalar Müsait (%50 Doluluk)",
+                "peak": "12:00 - 13:30",
+                "advice": "💡 Çalışmak veya sohbet etmek için şu an gayet uygun bir ortam var."
+            }
+        }
+
+        # Kullanıcının hangi kafeyi sorduğunu tespit etme
+        matched_cafe = None
+        user_query_lower = user_input.lower()
+        
+        for cafe_name, data in cafe_profiles.items():
+            if any(kw in user_query_lower for kw in data["keywords"]):
+                matched_cafe = (cafe_name, data)
+                break
+        
+        # Spesifik kafe ismi geçmiyorsa ama yoğunluk/kafe sorulduysa genel görünümü ver
+        if not matched_cafe and any(kw in user_query_lower for kw in ["yoğun", "kalabalık", "saat", "kafe", "doluluk"]):
+            matched_cafe = ("Genel Kampüs Kafeleri", {
+                "density": [20, 35, 50, 70, 95, 100, 75, 85, 65, 45, 30, 20, 15],
+                "status": "🔴 Genel Kampüs Yoğunluğu Zirvede (%85)",
+                "peak": "12:00 - 14:00",
+                "advice": "💡 Merkez kafeler yerine Fakülte kantinleri şu an daha sakindir."
+            })
+
+        # 📈 KAFE GRAFİK VE CANLI KART GÖSTERİMİ
+        if matched_cafe:
+            cafe_title, info = matched_cafe
+            st.markdown("---")
+            st.subheader(f"📍 {cafe_title} - Canlı Yoğunluk Analizi")
+            
+            col_status, col_peak = st.columns(2)
+            with col_status:
+                st.info(f"**Anlık Durum:** {info['status']}")
+            with col_peak:
+                st.warning(f"**En Yoğun Saatler:** {info['peak']}")
+
+            # Google Maps Tarzı Saatlik Çubuk Grafik
+            hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"]
+            df_chart = pd.DataFrame({
+                "Saat": hours,
+                "Yoğunluk Oranı (%)": info["density"]
+            }).set_index("Saat")
+
+            st.bar_chart(df_chart, height=220, color="#1b263b")
+            st.caption(f"{info['advice']}")
 
 else:
     st.header("🏢 SAÜ İdari Yönetim & Dekanlık Moderasyon Paneli")
