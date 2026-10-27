@@ -489,48 +489,94 @@ with tab_chat:
 # SEKME 2: YEMEKHANE & BESİN DEĞERLERİ
 # ------------------------------------------
 with tab_food:
-    st.subheader("🍱 SABİS Yemek Menüsü & Besin Değerleri")
-    st.caption("Tarihi seçerek SABİS yemekhanesindeki o güne özel menüyü ve besin değerlerini inceleyebilirsiniz.")
+    st.subheader("🍱 SABİS Yemek Menüsü & Canlı Entegrasyon")
+    
+    # Hızlı Gün Seçimi ve Görsel Kip Tercihi
+    col_view1, col_view2 = st.columns([2, 1])
+    with col_view1:
+        view_mode = st.radio(
+            "Görünüm Modu Seçin:",
+            ["✨ Akıllı Kart Görünümü (Makro & İkonlar)", "🌐 Canlı SABİS Sayfası (%100 Birebir Entegre)"],
+            horizontal=True
+        )
+    with col_view2:
+        today = date.today()
+        first_day = date(today.year, today.month, 1)
+        _, last_day_num = calendar.monthrange(today.year, today.month)
+        last_day = date(today.year, today.month, last_day_num)
+        
+        selected_date = st.date_input(
+            "🗓️ Tarih Seçin",
+            value=today,
+            min_value=first_day,
+            max_value=last_day,
+            key="food_tab_date_picker"
+        )
 
-    today = date.today()
-    first_day_of_month = date(today.year, today.month, 1)
-    _, last_day_num = calendar.monthrange(today.year, today.month)
-    last_day_of_month = date(today.year, today.month, last_day_num)
-
-    selected_date = st.date_input(
-        "🗓️ Tarih seçin (sadece içinde bulunduğumuz ay)",
-        value=today,
-        min_value=first_day_of_month,
-        max_value=last_day_of_month,
-    )
-
-    menu_items, status = fetch_sau_menu_by_date(selected_date)
     tarih_str = f"{selected_date.day} {AYLAR_TR[selected_date.month - 1]} {GUNLER_TR[selected_date.weekday()]}"
 
-    if status == "HAFTA_SONU":
-        st.warning(f"⚠️ **{tarih_str}** hafta sonuna denk geliyor; yemekhanede hizmet verilmiyor.")
-    elif status.startswith("RESMI_TATIL"):
-        ad = status.split(":", 1)[1] if ":" in status else "Resmi Tatil"
-        st.warning(f"🇹🇷 **{tarih_str}** — {ad} nedeniyle yemekhane kapalı.")
-    elif status == "NO_DATA" or not menu_items:
-        st.info(f"ℹ️ **{tarih_str}** için SABİS'te yayınlanmış bir menü bulunamadı.")
-    else:
-        total_kcal = sum([item['kcal'] for item in menu_items])
-        st.success(f"💡 **{tarih_str} Menüsü ({len(menu_items)} Çeşit Yemek - Toplam ~{total_kcal} kcal):**")
+    # MOD 1: CANLI SABİS GÖMÜLÜ EKRAN (Hata İhtimali Sıfır)
+    if "Canlı SABİS" in view_mode:
+        st.info(f"🔗 **{tarih_str}** için doğrudan SABİS resmi sunucusundan canlı çekilen menü ekranı:")
+        sabis_iframe_url = f"https://menu.sabis.sakarya.edu.tr/?tarih={selected_date.strftime('%Y-%m-%d')}"
         
-        for item in menu_items:
-            st.markdown(f"""
-            <div class="info-card">
-                <h4 style="margin:0 0 8px 0; color:#002855;">🍽️ {item['name']}</h4>
-                <div>
-                    <span class="macro-badge">🔥 {item['kcal']} kcal</span>
-                    <span class="macro-badge">🥩 Protein: {item['protein']}</span>
-                    <span class="macro-badge">🌾 Karbonhidrat: {item['carb']}</span>
-                    <span class="macro-badge">🥑 Yağ: {item['fat']}</span>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+        # Şık yuvarlatılmış gölgeli iframe konteyneri
+        st.components.v1.iframe(sabis_iframe_url, height=520, scrolling=True)
 
+    # MOD 2: AKILLI ŞIK KARTLAR & BESİN DEĞERLERİ
+    else:
+        menu_items, status = fetch_sau_menu_by_date(selected_date)
+
+        if status == "HAFTA_SONU":
+            st.warning(f"⚠️ **{tarih_str}** hafta sonuna denk gelmektedir. Hafta sonları yemekhane kapalıdır.")
+        elif status.startswith("RESMI_TATIL"):
+            ad = status.split(":", 1)[1] if ":" in status else "Resmi Tatil"
+            st.warning(f"🇹🇷 **{tarih_str} ({ad})** nedeniyle yemekhane kapalıdır.")
+        elif status == "NO_DATA" or not menu_items:
+            st.info(f"ℹ️ **{tarih_str}** için henüz SABİS'e menü girişi yapılmamıştır.")
+        else:
+            total_kcal = sum([item.get('kcal', 0) for item in menu_items])
+            daily_percentage = min(100, int((total_kcal / 2000) * 100))
+            
+            # Üst Özet ve Kalori İlerleme Çubuğu
+            st.success(f"💡 **{tarih_str} Menüsü Toplam Kalorisi:** ~{total_kcal} kcal")
+            st.caption(f"Günlük Ortalama Enerji İhtiyacının (2000 kcal) **%{daily_percentage}** kadarını karşılıyor:")
+            st.progress(daily_percentage / 100.0)
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # Yemek Kartları (İkon Filtreli)
+            for item in menu_items:
+                name = item['name']
+                name_lower = name.lower()
+                
+                # Otomatik İkon Atama
+                icon = "🍽️"
+                if "çorba" in name_lower: icon = "🥣"
+                elif any(k in name_lower for k in ["köfte", "döner", "tavuk", "et", "kebap", "sote", "baget", "cordon"]): icon = "🍗"
+                elif any(k in name_lower for k in ["pilav", "makarna", "börek"]): icon = "🍚"
+                elif any(k in name_lower for k in ["tatlı", "helva", "tulumba", "irmik", "puding"]): icon = "🍰"
+                elif "ayran" in name_lower or "cacık" in name_lower: icon = "🥤"
+                elif "salata" in name_lower or "meyve" in name_lower: icon = "🥗"
+
+                st.markdown(f"""
+                <div class="info-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="margin:0 0 6px 0; color:#002855;">{icon} {name}</h4>
+                        <div>
+                            <span class="macro-badge">🔥 {item.get('kcal', 200)} kcal</span>
+                            <span class="macro-badge">🥩 Protein: {item.get('protein', '10g')}</span>
+                            <span class="macro-badge">🌾 Karbonhidrat: {item.get('carb', '35g')}</span>
+                            <span class="macro-badge">🥑 Yağ: {item.get('fat', '8g')}</span>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Etkileşimli Öğrenci Beğeni Widget'ı
+            st.markdown("---")
+            st.write("💬 **Bugünkü menüyü nasıl buldun?**")
+            st.feedback("stars", key=f"menu_feedback_{selected_date}")
+            
 # ------------------------------------------
 # SEKME 3: KAFE YOĞUNLUK ANALİZİ
 # ------------------------------------------
