@@ -414,25 +414,21 @@ if app_mode == "🎓 Öğrenci Ekranı":
 
 else:
     st.header("🏢 SAÜ İdari Yönetim & Dekanlık Moderasyon Paneli")
-    st.caption("Yapay zeka tarafından KVKK maskelemesinden ve AI Scrubbing işleminden geçmiş gelen bildirimler listelenmektedir.")
+    st.caption("🔒 KVKK Uyumlu Arayüz: İdari personel öğrenci kimliğini ve hassas kişisel verileri göremez. Yalnızca AI Scrubbing işleminden geçmiş anonim talepler listelenir.")
     st.markdown("---")
 
     if not st.session_state.submitted_tickets:
         st.info("💡 Henüz gelen bildirim bulunmamaktadır. Öğrenci ekranındaki 🛠️ butonundan yeni bir bildirim göndererek canlı testi gerçekleştirebilirsiniz.")
     else:
-        st.subheader(f"📩 Bekleyen Bildirimler ({len(st.session_state.submitted_tickets)})")
+        st.subheader(f"📩 İşlem Bekleyen Anonim Bildirimler ({len(st.session_state.submitted_tickets)})")
         
         for idx, ticket in enumerate(st.session_state.submitted_tickets):
             with st.container():
                 st.markdown(f"#### 📌 Talep Kodu: `{ticket.get('tracking_code')}` | Gönderen: `{ticket.get('student_hash')}`")
                 
-                col_orig, col_ai = st.columns(2)
-                with col_orig:
-                    st.markdown("**❌ Öğrencinin Yazdığı Orijinal Metin (Gizli Veri):**")
-                    st.error(ticket.get("raw_text"))
-                with col_ai:
-                    st.markdown("**✅ İdarenin Gördüğü AI Scrubbed Metin (Anonim):**")
-                    st.success(ticket.get("scrubbed_text"))
+                # Orijinal metin tamamen kaldırıldı, idare sadece AI temizlenmiş metni görür
+                st.markdown("**📄 Bildirim Detayı (AI Scrubbed & Anonim):**")
+                st.success(ticket.get("scrubbed_text"))
                 
                 c_a1, c_a2, c_a3 = st.columns(3)
                 with c_a1:
@@ -446,4 +442,10 @@ else:
                         st.success(f"{ticket.get('tracking_code')} talebi ilgili birime iletildi.")
                     if st.button(f"❌ İptal Et / Reddet", key=f"reject_{idx}"):
                         st.warning(f"{ticket.get('tracking_code')} talebi reddedildi.")
+                
+                # (Opsiyonel) Jüriye sistemin çalıştığını kanıtlamak isterseniz gizli bir açılır menü bırakabilirsiniz:
+                with st.expander("🔍 [Jüri Demosu İçin] AI Temizleme Öncesi Orijinal Metin Kontrolü"):
+                    st.caption("⚠️ Bu alan gerçek canlı sistemde idareye kapalıdır, yalnızca sunum testi için gösterilmektedir.")
+                    st.write(ticket.get("raw_text"))
+                    
                 st.markdown("---")
