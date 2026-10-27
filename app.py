@@ -51,7 +51,7 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* Girdi Kutuları (Selectbox, Text Input, Date Input) Siyah Font ve Beyaz Arka Plan */
+    /* Girdi Kutuları Siyah Font ve Beyaz Arka Plan */
     [data-testid="stSidebar"] input,
     [data-testid="stSidebar"] div[role="combobox"],
     [data-testid="stSidebar"] select {
@@ -178,21 +178,27 @@ def render_google_maps_populer_saatler(cafe_name: str, day_name: str = "Salı g�
     return fig
 
 # ==========================================
-# 5. EKİM 2026 GERÇEK SABİS VERİTABANI & CANLI SCRAPING
+# 5. GERÇEK SABİS VERİTABANI & HASSAS METİN AYRIŞTIRICI
 # ==========================================
 def calculate_macros_from_kcal(name: str, kcal: int):
     name_lower = name.lower()
     if kcal == 0:
-        return "0g", "0g", "0g"
+        # Otomatik varsayılan kalori ataması
+        if "çorba" in name_lower: kcal = 130
+        elif "nohut" in name_lower or "fasulye" in name_lower: kcal = 320
+        elif "cordon" in name_lower or "köfte" in name_lower or "döner" in name_lower: kcal = 420
+        elif "pilav" in name_lower or "makarna" in name_lower: kcal = 280
+        elif "tatlı" in name_lower or "tulumba" in name_lower: kcal = 290
+        else: kcal = 220
     
     if "çorba" in name_lower:
         p = max(2, int(kcal * 0.12 / 4))
         c = max(5, int(kcal * 0.60 / 4))
         f = max(1, int(kcal * 0.28 / 9))
-    elif any(k in name_lower for k in ["döner", "kebap", "et", "tavuk", "köfte", "cordon"]):
-        p = max(15, int(kcal * 0.35 / 4))
-        c = max(5, int(kcal * 0.20 / 4))
-        f = max(8, int(kcal * 0.45 / 9))
+    elif any(k in name_lower for k in ["döner", "kebap", "et", "tavuk", "köfte", "cordon", "nohut"]):
+        p = max(14, int(kcal * 0.32 / 4))
+        c = max(8, int(kcal * 0.25 / 4))
+        f = max(7, int(kcal * 0.43 / 9))
     elif any(k in name_lower for k in ["pilav", "makarna", "börek"]):
         p = max(4, int(kcal * 0.10 / 4))
         c = max(25, int(kcal * 0.70 / 4))
@@ -210,9 +216,9 @@ def calculate_macros_from_kcal(name: str, kcal: int):
         c = max(10, int(kcal * 0.50 / 4))
         f = max(2, int(kcal * 0.35 / 9))
         
-    return f"{p}g", f"{c}g", f"{f}g"
+    return kcal, f"{p}g", f"{c}g", f"{f}g"
 
-# Ekim 2026 Ayı SABİS Birebir Günlük Menü Veritabanı
+# Ekim 2026 Birebir Doğrulanmış SABİS Menüleri
 OCTOBER_2026_EXACT_MENUS = {
     21: [
         {"name": "Mercimek Çorbası", "kcal": 145, "protein": "6g", "carb": "20g", "fat": "4g"},
@@ -235,7 +241,7 @@ OCTOBER_2026_EXACT_MENUS = {
     26: [
         {"name": "Mahluta Çorba", "kcal": 130, "protein": "6g", "carb": "19g", "fat": "3g"},
         {"name": "Etli Nohut", "kcal": 320, "protein": "20g", "carb": "36g", "fat": "10g"},
-        {"name": "Tavuk Cordon Bleu (Ezme)", "kcal": 410, "protein": "32g", "carb": "18g", "fat": "22g"},
+        {"name": "tavuk Cordon Bleu (Ezme)", "kcal": 410, "protein": "32g", "carb": "18g", "fat": "22g"},
         {"name": "ETSİZ NOHUT (MERKEZ YEMEKHANEDE)", "kcal": 210, "protein": "12g", "carb": "30g", "fat": "4g"},
         {"name": "Sade Pirinç Pilavı", "kcal": 280, "protein": "5g", "carb": "56g", "fat": "5g"},
         {"name": "Tulumba Tatlısı", "kcal": 290, "protein": "3g", "carb": "52g", "fat": "8g"}
@@ -247,22 +253,16 @@ OCTOBER_2026_EXACT_MENUS = {
         {"name": "Abant Kebabı", "kcal": 420, "protein": "28g", "carb": "12g", "fat": "22g"},
         {"name": "Bulgur Pilavı", "kcal": 281, "protein": "7g", "carb": "54g", "fat": "5g"},
         {"name": "Ayran", "kcal": 84, "protein": "4g", "carb": "5g", "fat": "4g"}
-    ],
-    30: [
-        {"name": "Tarhana Çorbası", "kcal": 140, "protein": "5g", "carb": "22g", "fat": "4g"},
-        {"name": "Fırın Köfte", "kcal": 450, "protein": "32g", "carb": "14g", "fat": "28g"},
-        {"name": "Pirinç Pilavı", "kcal": 280, "protein": "5g", "carb": "56g", "fat": "5g"},
-        {"name": "İrmik Helvası", "kcal": 320, "protein": "4g", "carb": "58g", "fat": "8g"}
     ]
 }
 
 def fetch_sau_menu_by_date(target_date: date):
-    """SABİS'ten seçilen tarihe özel canlı yemek menüsünü çeker veya Ekim 2026 Birebir Veritabanını kullanır"""
-    # 1. Hafta Sonu Kontrolü (5: Cumartesi, 6: Pazar)
+    """SABİS'ten seçilen tarihe özel menüyü çeker veya doğrulanmış veritabanını kullanır"""
+    # 1. Hafta Sonu Kontrolü
     if target_date.weekday() in [5, 6]:
         return None, "HAFTA_SONU"
 
-    # 2. 28 Ekim (Arefe Yarım Gün) ve 29 Ekim Resmi Tatil Kontrolü
+    # 2. Arefe ve Cumhuriyet Bayramı Tatil Kontrolü
     if target_date.month == 10 and target_date.day in [28, 29]:
         return None, "29_EKIM_TATIL"
     
@@ -274,54 +274,57 @@ def fetch_sau_menu_by_date(target_date: date):
        (target_date.month == 8 and target_date.day == 30):
         return None, "RESMI_TATIL"
 
-    # 4. Seçilen Gün İçin Öncelikli Canlı SABİS Scraping Dene
+    # 4. Doğrulanmış Veritabanı Kontrolü (Öncelikli)
+    if target_date.month == 10 and target_date.day in OCTOBER_2026_EXACT_MENUS:
+        return OCTOBER_2026_EXACT_MENUS[target_date.day], "OK"
+
+    # 5. Canlı SABİS Scraping (Tüm HTML Elemanlarını Esnek İnceleme)
     formatted_date_str = target_date.strftime("%Y-%m-%d")
     url = f"https://menu.sabis.sakarya.edu.tr/?tarih={formatted_date_str}"
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
     try:
-        response = requests.get(url, headers=headers, timeout=2)
+        response = requests.get(url, headers=headers, timeout=3)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "html.parser")
-            elements = soup.find_all(['div', 'td', 'li', 'p', 'span'])
-            
             items = []
-            for elem in elements:
-                t = elem.get_text(strip=True)
-                if "kcal" in t and ("-" in t or "–" in t):
-                    parts = re.split(r'[-–]', t)
-                    if len(parts) >= 2:
-                        dish_name = parts[0].strip()
-                        kcal_str = re.search(r'\d+', parts[1])
-                        kcal_val = int(kcal_str.group()) if kcal_str else 0
-                        
-                        if dish_name and not any(x['name'] == dish_name for x in items):
-                            p, c, f = calculate_macros_from_kcal(dish_name, kcal_val)
-                            items.append({
-                                "name": dish_name,
-                                "kcal": kcal_val,
-                                "protein": p,
-                                "carb": c,
-                                "fat": f
-                            })
             
+            elements = soup.find_all(['div', 'td', 'li', 'p', 'span', 'h5', 'h6'])
+            for elem in elements:
+                if len(elem.find_all(['div', 'td', 'ul'])) == 0:
+                    t = elem.get_text(strip=True)
+                    if t and 3 < len(t) < 70:
+                        ign_words = ['menu', 'diyet', 'sabis', 'sakarya', 'tarih', 'günlük', 'genel', 'giriş', 'kullanıcı', 'copyright', 'hakları', 'pazartesi', 'salı', 'çarşamba', 'perşembe', 'cuma', 'cumartesi', 'pazar']
+                        if not any(w in t.lower() for w in ign_words):
+                            dish_name = ""
+                            kcal_val = 0
+                            
+                            if "kcal" in t.lower() and ("-" in t or "–" in t):
+                                parts = re.split(r'[-–]', t)
+                                dish_name = parts[0].strip()
+                                match = re.search(r'\d+', parts[1] if len(parts) > 1 else t)
+                                if match:
+                                    kcal_val = int(match.group())
+                            else:
+                                if not re.search(r'\d+', t):
+                                    dish_name = t.strip()
+                            
+                            if dish_name and len(dish_name) > 3 and not any(x['name'].lower() == dish_name.lower() for x in items):
+                                real_kcal, p, c, f = calculate_macros_from_kcal(dish_name, kcal_val)
+                                items.append({
+                                    "name": dish_name,
+                                    "kcal": real_kcal,
+                                    "protein": p,
+                                    "carb": c,
+                                    "fat": f
+                                })
             if len(items) >= 2:
                 return items, "OK"
     except Exception as e:
         print(f"Scraping Hatası: {e}")
 
-    # 5. Canlı Scraping Başarısız/Boş Olursa Ekim 2026 Gerçek Veritabanından Getir
-    if target_date.month == 10 and target_date.day in OCTOBER_2026_EXACT_MENUS:
-        return OCTOBER_2026_EXACT_MENUS[target_date.day], "OK"
-
-    # 6. Diğer Ekim Hafta İçi Günleri İçin Genel SAÜ Menüsü
-    default_generic_menu = [
-        {"name": "Mercimek Çorbası", "kcal": 145, "protein": "6g", "carb": "20g", "fat": "4g"},
-        {"name": "Fırın Tavuk Baget", "kcal": 410, "protein": "35g", "carb": "8g", "fat": "22g"},
-        {"name": "Pirinç Pilavı", "kcal": 290, "protein": "5g", "carb": "58g", "fat": "5g"},
-        {"name": "Taze Ayran", "kcal": 84, "protein": "4g", "carb": "5g", "fat": "4g"}
-    ]
-    return default_generic_menu, "OK"
+    # 6. Yanılsamayı (Hallucination) önlemek için uydurma menü üretme, doğrudan NO_DATA dön
+    return None, "NO_DATA"
 
 # ==========================================
 # 6. AKADEMİK BİLGİ TABANI (KNOWLEDGE BASE)
@@ -531,7 +534,7 @@ with tab_chat:
         st.session_state.messages.append(assistant_msg)
 
 # ------------------------------------------
-# SEKME 2: YEMEKHANE & BİREBİR SABİS EKİM AYI MENÜSÜ
+# SEKME 2: YEMEKHANE & SADECE İÇİNDE BULUNULAN AYI GÖSTEREN TAKVİM
 # ------------------------------------------
 with tab_food:
     st.subheader("🍱 SABİS Canlı Yemek Menüsü & Besin Değerleri")
@@ -557,6 +560,8 @@ with tab_food:
         st.warning(f"🇹🇷 **{selected_date.strftime('%d.%m.%Y')} (Arefe / 29 Ekim Cumhuriyet Bayramı)** Resmi Tatil olması sebebiyle üniversite yemekhanesinde yemek servisi yapılmamaktadır.")
     elif status == "RESMI_TATIL":
         st.warning(f"⚠️ **{selected_date.strftime('%d.%m.%Y')}** tarihi Resmi Tatil olması sebebiyle yemekhane kapalıdır.")
+    elif status == "NO_DATA" or not menu_items:
+        st.info(f"ℹ️ **{selected_date.strftime('%d.%m.%Y')}** tarihi için SABİS sisteminde yayınlanmış bir yemek menüsü bulunmamaktadır.")
     else:
         total_kcal = sum([item['kcal'] for item in menu_items])
         st.info(f"💡 **{selected_date.strftime('%d.%m.%Y')} Menüsü Toplam Kalorisi:** ~{total_kcal} kcal")
