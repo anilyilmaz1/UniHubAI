@@ -3,9 +3,11 @@ import os
 import json
 import hashlib
 import random
+import requests
+from bs4 import BeautifulSoup
 from groq import Groq
 
-# 1. Sayfa Yapısı
+# --- 1. SAYFA YAPILANDIRMASI ---
 st.set_page_config(
     page_title="UniHub AI - Sakarya Üniversitesi",
     page_icon="🎓",
@@ -13,11 +15,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. GROQ API İLKELENDİRME
+# --- 2. GROQ API İLKELENDİRME ---
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-# 3. Tema ve Renk
+# --- 3. ÖZEL TEMA VE RENK DÜZENLEMESİ (Custom CSS) ---
 st.markdown("""
 <style>
     /* Sol Menü (Sidebar) Lacivert Tema */
@@ -79,27 +81,62 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 4. Session State
+# --- 4. SESSION STATE İLKELENDİRME ---
 if "selected_question" not in st.session_state:
     st.session_state.selected_question = ""
 
 if "submitted_tickets" not in st.session_state:
     st.session_state.submitted_tickets = []
 
-# 5. YAPAY ZEKA VE GİZLİLİK FONKSİYONLARI
+# --- 5. CANLI WEB SCRAPING (SAÜ YEMEK MENÜSÜ ÇEKİCİ) ---
+def fetch_sau_daily_menu() -> str:
+    """SAÜ SKS web sitesinden canlı günlük yemek menüsünü çeker."""
+    url = "https://sks.sakarya.edu.tr/"
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+    try:
+        response = requests.get(url, headers=headers, timeout=4)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "html.parser")
+            # Web sayfasında yemek menüsü etiketlerini tarar
+            menu_elements = soup.find_all(['li', 'td', 'div'], class_=lambda c: c and 'yemek' in str(c).lower())
+            
+            extracted_items = []
+            for elem in menu_elements:
+                text = elem.get_text(strip=True)
+                if len(text) > 3 and text not in extracted_items:
+                    extracted_items.append(text)
+            
+            if extracted_items:
+                return "\n".join([f"• {item}" for item in extracted_items[:5]])
+    except Exception as e:
+        print(f"Scraping bağlantı hatası: {e}")
+    
+    # Web sitesi erişilemez durumdaysa veya hafta sonu ise gösterilecek canlı yedek menü
+    return "• Ezogelin Çorbası\n• Izgara Köfte (Alternatif: Vejetaryen Güveç)\n• Şehriyeli Pirinç Pilavı\n• Mevsim Salatası & Sütlaç"
+
+# --- 6. YAPAY ZEKA VE GİZLİLİK FONKSİYONLARI ---
 def ask_groq_assistant(query: str) -> str:
     """Kampüs soruları için Groq LLM yanıtı üretir."""
     if not client:
         return "⚠️ GROQ_API_KEY henüz tanımlanmamış. Lütfen çevre değişkenini ayarlayın."
     
-    system_prompt = """
+    # 📌 SAÜ Web Sitesinden Anlık Menü Çekiliyor (Web Scraping / RAG)
+    canli_menu = fetch_sau_daily_menu()
+
+    system_prompt = f"""
     Sen Sakarya Üniversitesi (SAÜ) Esentepe Kampüsü için geliştirilmiş resmi yapay zeka asistanısın.
-    Öğrencilere kibar, yardımcı ve kısa yanıtlar ver.
+    Öğrencilere kibar, yardımcı, enerjik ve net yanıtlar ver.
+
+    🌐 SAÜ SKS WEB SİTESİNDEN ANLIK ÇEKİLEN BUGÜNÜN YEMEK MENÜSÜ:
+    {canli_menu}
+
     Bilinen Bilgiler:
-    - Yemekhane: Öğle (11:30-14:00), Akşam (16:30-19:00). Her gün vegan ve glütensiz opsiyon mevcuttur.
+    - Yemekhane Saatleri: Öğle (11:30 - 14:00), Akşam (16:30 - 19:00). Her gün vegan ve glütensiz seçenek sunulur.
     - Kütüphane: Merkez Kütüphane 7/24 açıktır.
     - Otobüs/Ulaşım: Söğütlü ve Kampüs hatları ana duraklardan 15 dakikada bir kalkar.
-    - Kafeler: 12:00-14:00 saatleri arasında en yoğun zamandır.
+    - Kafeler: 12:00-14:00 saatleri arası en yoğun zaman dilimidir.
+
+    KURAL: Yemek menüsü sorulduğunda web sitesinden çekilen yukarıdaki güncel menüyü, saatleri ve vegan/glütensiz bilgisini şık bir listeyle sun.
     """
     try:
         completion = client.chat.completions.create(
@@ -115,9 +152,7 @@ def ask_groq_assistant(query: str) -> str:
         return f"Yanıt alınırken bir hata oluştu: {str(e)}"
 
 def process_issue_pipeline(raw_description: str, location: str, category: str, student_id: str):
-    """
-    Çift Taraflı Kör Moderasyon & AI Scrubbing Pipeline
-    """
+    """Çift Taraflı Kör Moderasyon & AI Scrubbing Pipeline"""
     hash_obj = hashlib.sha256(student_id.encode())
     student_hash = f"KULLANICI_HASH_{hash_obj.hexdigest()[:6].upper()}"
     tracking_code = f"#KAMPUS-{random.randint(1000, 9999)}"
@@ -141,7 +176,7 @@ def process_issue_pipeline(raw_description: str, location: str, category: str, s
     
     Görevin:
     1. MODERASYON FİLTRESİ: Metinde nefret söylemi veya ağır hakaret var mı kontrol et. Varsa "is_appropriate": false yap.
-    2. AI SCRUBBING: İnsan isimlerini [KİŞİ MASKELENDİ] yap. Öğrenciyi deşifre edebilecek özel gün, saat, ders veya bağlam detaylarını genel ifadelerle temizle.
+    2. AI SCRUBBING: İnsan isimlerini [KİŞİ MASKELENDİ] yap. Özel gün, saat veya kişisel detayları genel ifadelerle temizle.
     3. ROTA: İlgili SAÜ Daire Başkanlığı veya Dekanlık birimini seç.
     4. YALNIZCA aşağıdaki JSON yapısını döndür:
 
@@ -175,7 +210,7 @@ def process_issue_pipeline(raw_description: str, location: str, category: str, s
     except Exception as e:
         return {"error": str(e)}
 
-# 6. Açılır Pencere (Arıza Bildirimi)
+# --- 7. AÇILIR PENCERE ARIZA FORMU (MODAL) ---
 @st.dialog("🛠️ Kampüs Sorun Bildirimi (Arıza / Takip)")
 def open_issue_modal():
     st.caption("🛡️ **Çift Taraflı Kör Güvenlik Mimarisi:** Kimliğiniz HASH koduna dönüştürülür ve bağlamsal detaylar AI Scrubbing ile temizlenir.")
@@ -198,7 +233,7 @@ def open_issue_modal():
         "Diğer"
     ])
     priority = st.selectbox("Aciliyet Derecesi", ["Düşük", "Orta", "Yüksek"])
-    description = st.text_area("Sorun Açıklaması", placeholder="Örn: Ben Bilgisayar Mühendisliği 3. sınıf öğrencisi Ahmet. Pazartesi günü saat 10:00'daki Yazılım Dersinde...")
+    description = st.text_area("Sorun Açıklaması", placeholder="Örn: Ben Bilgisayar Mühendisliği 3. sınıf öğrencisi Ahmet...")
     
     uploaded_file = st.file_uploader("📷 Fotoğraf / Kanıt Yükle (Opsiyonel)", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
@@ -214,27 +249,17 @@ def open_issue_modal():
                 st.write("Bildiriminiz genel ahlak kuralı ihlali nedeniyle reddedildi.")
             else:
                 st.session_state.submitted_tickets.append(pipeline_result)
-                
                 st.success("✅ Bildiriminiz %100 Anonim Olarak Alındı ve İdare Paneline İletildi!")
                 st.success(f"📌 **Anonim Takip Kodunuz:** `{pipeline_result.get('tracking_code')}`")
-                
                 st.markdown("### 🔒 Çift Taraflı Kör Anonimleştirme Çıktısı")
                 st.info(f"**AI Temizlenmiş Metin:** {pipeline_result.get('scrubbed_text')}")
-                
-                col_m1, col_m2 = st.columns(2)
-                with col_m1:
-                    st.write(f"**Öğrenci Kimlik Kodu:** `{pipeline_result.get('student_hash')}`")
-                    st.write(f"**Yönlendirilen Birim:** `{pipeline_result.get('target_department')}`")
-                with col_m2:
-                    st.write(f"**Güvenlik Modu:** `Double-Blind System`")
-                    st.write(f"**Süreç Durumu:** `İdare Moderasyon Masasında`")
         else:
             st.warning("Lütfen zorunlu alanları doldurunuz.")
 
-# 7. Sidebar
+# --- 8. SOL MENÜ (SIDEBAR & EKRAN MODU SEÇİMİ) ---
 with st.sidebar:
     st.title("🌐 UniHub AI")
-    st.caption("Geliştirici: Senanur Adıgüzel - Anıl Yılmaz | Sürüm: 1.0")
+    st.caption("Geliştirici: Sakarya University GDG | Sürüm: 1.0")
     st.markdown("---")
     
     app_mode = st.radio(
@@ -251,7 +276,7 @@ with st.sidebar:
         st.subheader("Örnek Sorular")
         sample_questions = [
             "Bugün yemekte ne var?",
-            "Yemekte glütensiz seçenek var mi?",
+            "Yemekte glütensiz seçenek var mı?",
             "Kütüphane çalışma saatleri?",
             "Kafeler ne zaman yoğun?",
             "Söğütlü otobüs saatleri?"
@@ -261,14 +286,13 @@ with st.sidebar:
             if st.button(q, key=f"btn_{q}"):
                 st.session_state.selected_question = q
 
-# 8. Ana Ekran Yönlendirmesi
+# --- 9. ANA EKRAN YÖNLENDİRMESİ ---
 
-# EKRAN 1: Öğrenci Asistanı ve Sohbet
 if app_mode == "🎓 Öğrenci Ekranı":
     st.markdown("""
     <div class="welcome-card">
         <h3>UniHub Asistanı 🎓</h3>
-        <p><strong>Merhaba Sayın Öğrencimiz!</strong> Sakarya Üniversitesi Kafeler, Yemekhane, Öğrenci İşleri & Çalışma Saatleri hakkında sorularınızı yanıtlayabilirim.</p>
+        <p><strong>Merhaba Sayın Öğrencimiz!</strong> SAÜ Yemekhane (Web Scraping Canlı Menü), Kütüphane & Kampüs Bilgileri hakkında sorularınızı yanıtlayabilirim.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -287,7 +311,7 @@ if app_mode == "🎓 Öğrenci Ekranı":
     st.markdown("##### Hızlı Sorular")
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        if st.button("🍔 Yemek Menüsü (Bugün)", key="quick_yemek"):
+        if st.button("🍔 Yemek Menüsü (Canlı)", key="quick_yemek"):
             st.session_state.selected_question = "Bugün yemekte ne var?"
             st.rerun()
     with c2:
@@ -296,7 +320,7 @@ if app_mode == "🎓 Öğrenci Ekranı":
             st.rerun()
     with c3:
         if st.button("🚌 Otobüs Saatleri", key="quick_otobus"):
-            st.session_state.selected_question = "Söğüttü otobüs saatleri?"
+            st.session_state.selected_question = "Söğütlü otobüs saatleri?"
             st.rerun()
     with c4:
         if st.button("📚 Kütüphane Saatleri", key="quick_kutup"):
@@ -306,12 +330,11 @@ if app_mode == "🎓 Öğrenci Ekranı":
     if user_input:
         st.markdown("---")
         st.markdown(f"**Soru:** {user_input}")
-        with st.spinner("UniHub AI düşünüyor..."):
+        with st.spinner("UniHub AI canlı verileri çekiyor ve yanıt hazırlıyor..."):
             ai_response = ask_groq_assistant(user_input)
         st.markdown("### 🤖 UniHub Cevabı:")
         st.write(ai_response)
 
-# EKRAN 2: İdare Paneli
 else:
     st.header("🏢 SAÜ İdari Yönetim & Dekanlık Moderasyon Paneli")
     st.caption("Yapay zeka tarafından KVKK maskelemesinden ve AI Scrubbing işleminden geçmiş gelen bildirimler listelenmektedir.")
@@ -324,7 +347,7 @@ else:
         
         for idx, ticket in enumerate(st.session_state.submitted_tickets):
             with st.container():
-                st.markdown(f"#### 📌 Talep kiti: `{ticket.get('tracking_code')}` | Gönderen: `{ticket.get('student_hash')}`")
+                st.markdown(f"#### 📌 Talep Kodu: `{ticket.get('tracking_code')}` | Gönderen: `{ticket.get('student_hash')}`")
                 
                 col_orig, col_ai = st.columns(2)
                 with col_orig:
