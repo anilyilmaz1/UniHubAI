@@ -1,5 +1,6 @@
 streamlit
-groq
 requests
 beautifulsoup4
 pandas
+groq
+plotly
