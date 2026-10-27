@@ -1,47 +1,30 @@
----
-title: UniHub Academic AI
-emoji: 🎓
-colorFrom: blue
-colorTo: indigo
-sdk: streamlit
-sdk_version: 1.35.0
-app_file: app.py
-pinned: false
----
+# 🎓 UniHub Academic AI - SAÜ Akıllı Kampüs Asistanı
 
-# 🎓 UniHub Academic AI - Sakarya Üniversitesi Akıllı Kampüs Asistanı
-
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
-![Groq](https://img.shields.io/badge/Groq-API-orange?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-
-**UniHub Academic AI**, Sakarya Üniversitesi (SAÜ) öğrencilerinin akademik takvim, sınav tarihleri, fakülte/bölüm bazlı staj başvuru süreçleri, mazeret dilekçeleri ve günlük kampüs yaşamı hakkındaki sorularına anında yanıt veren **kişiselleştirilmiş akıllı chatbot platformudur**.
+UniHub Academic AI, Sakarya Üniversitesi öğrencilerinin kampüs yaşamını kolaylaştırmak, akademik süreçlerde zaman kaybını önlemek ve tek bir noktadan tüm kampüs verilerine ulaşmalarını sağlamak amacıyla geliştirilmiş yapay zeka destekli bir dijital kampüs portalıdır.
 
 ---
 
 ## 🚀 Öne Çıkan Özellikler
 
-* 🎓 **Fakülte ve Bölüm Bağlamı (Contextual AI):** Sol menüden seçilen fakülte ve bölüme göre (Örn: *Bilgisayar Mühendisliği 40 Günlük Stajı* veya *İşletme Fakültesi 7+1 Mesleki Uygulaması*) özelleştirilmiş yanıtlar üretir.
-* 📅 **Akademik Takvim & Sınav Rehberi:** Vize, final, bütünleme, mazeret sınavı başvuru tarihleri ve tek ders sınav kurallarını anında yanıtlar.
-* 📝 **Adım Adım Staj Süreçleri:** Staj formlarının indirilmesinden SGK girişlerine, staj defterinin teslimine kadar tüm süreci rehber eşliğinde sunar.
-* 🌐 **SABİS Canlı Yemekhane Menüsü:** Sakarya Üniversitesi SABİS sisteminden (`menu.sabis.sakarya.edu.tr`) web scraping altyapısıyla günün canlı yemek menüsünü çekip gösterir.
-* ⚡ **Hızlı Sorular (Quick Prompts):** Öğrencilerin en çok sorduğu sorular için tek tıkla sorgu çalıştırma butonları içerir.
+- 💬 **Akıllı Akademik AI Asistan:** SAÜ akademik takvimi, vize/final tarihleri ve fakülte/bölüme özel staj yönergeleri hakkında %100 doğru ve hızlı yanıtlar.
+- 🍱 **SABİS Canlı Yemekhane & Besin Değerleri:** SABİS sisteminden çekilen günlük yemek menüsü, kalori ve makro besin değerleri (protein, karbonhidrat, yağ).
+- ☕ **Kafe Yoğunluk Analizi:** Kampüsteki kafelerin (*Lumo, Coffy, Adıbahçe, Taş Kafe*) saatlik tahmini doluluk durumları ve görsel grafikleri.
+- 🚌 **Ulaşım & SAKUS Rehberi:** Kampüs hatları (*4, 15, 24, 54*) güzergah bilgileri ve canlı SAKUS otobüs takip erişimi.
+- 🧮 **SAÜ Not & Baraj Hesaplayıcı:** Vize notuna göre dersten geçmek için gereken final puanını ve SAÜ'nün **50 final baraj kuralını** hesaplayan araç.
 
 ---
 
-## 🛠️ Teknoloji Yığını
+## 🛠️ Kullanılan Teknolojiler
 
-* **Arayüz (Frontend):** Streamlit
-* **Yapay Zeka (LLM Orchestration):** Groq API (`qwen/qwen3.8-27b`)
-* **Veri Çekme (Web Scraping):** BeautifulSoup4, Requests
-* **Veri İşleme:** Pandas
-* **Dağıtım (Deployment):** Hugging Face Spaces / GitHub
+- **Arayüz:** Streamlit, Custom HTML/CSS (SAÜ Kurumsal Tema)
+- **Yapay Zeka (LLM):** Groq API (`llama-3.3-70b` / `qwen3.8-27b`)
+- **Veri Çekme (Scraping):** BeautifulSoup4, Requests
+- **Görselleştirme & Veri:** Pandas, Plotly Express
 
 ---
 
-## 💻 Kurulum ve Çalıştırma
+## 💻 Yerel Kurulum & Çalıştırma
 
-### 1. Repoyu Klonlayın
-```bash
-git clone [https://github.com/anilyilmaz1/UniHubAI.git](https://github.com/anilyilmaz1/UniHubAI.git)
-cd UniHubAI
+1. **Gerekli kütüphaneleri yükleyin:**
+   ```bash
+   pip install -r requirements.txt
