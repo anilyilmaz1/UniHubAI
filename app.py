@@ -3,6 +3,7 @@ import os
 import requests
 import pandas as pd
 from datetime import datetime, date
+import calendar
 from bs4 import BeautifulSoup
 from groq import Groq
 import plotly.graph_objects as go
@@ -50,7 +51,7 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* Girdi Kutuları (Selectbox, Text Input) Siyah Font ve Beyaz Arka Plan */
+    /* Girdi Kutuları (Selectbox, Text Input, Date Input) Siyah Font ve Beyaz Arka Plan */
     [data-testid="stSidebar"] input,
     [data-testid="stSidebar"] div[role="combobox"],
     [data-testid="stSidebar"] select {
@@ -177,10 +178,9 @@ def render_google_maps_populer_saatler(cafe_name: str, day_name: str = "Salı g�
     return fig
 
 # ==========================================
-# 5. DİNANİK SABİS TARİH BAZLI SCRAPING & MAKRO HESAPLAMA
+# 5. DİNAMİK SABİS TARİH BAZLI SCRAPING & MAKRO HESAPLAMA
 # ==========================================
 def calculate_macros_from_kcal(name: str, kcal: int):
-    """Yemeğin ismine ve kalorisine göre makro besin tahmini yapar"""
     name_lower = name.lower()
     if kcal == 0:
         return "0g", "0g", "0g"
@@ -214,14 +214,20 @@ def calculate_macros_from_kcal(name: str, kcal: int):
 
 def fetch_sau_menu_by_date(target_date: date):
     """SABİS'ten seçilen tarihe özel canlı yemek menüsünü çeker"""
-    # Hafta sonu kontrolü (5: Cumartesi, 6: Pazar)
+    # 1. Hafta Sonu Kontrolü
     if target_date.weekday() in [5, 6]:
         return None, "HAFTA_SONU"
 
-    # Resmi Tatil Kontrolü (Örn: 29 Ekim)
-    if target_date.month == 10 and target_date.day == 29:
+    # 2. 28 Ekim (Arefe Yarım Gün) ve 29 Ekim Resmi Tatil Kontrolü
+    if target_date.month == 10 and target_date.day in [28, 29]:
         return None, "29_EKIM_TATIL"
-    if target_date.month == 1 and target_date.day == 1:
+    
+    # 3. Diğer Resmi Tatiller
+    if (target_date.month == 1 and target_date.day == 1) or \
+       (target_date.month == 4 and target_date.day == 23) or \
+       (target_date.month == 5 and target_date.day in [1, 19]) or \
+       (target_date.month == 7 and target_date.day == 15) or \
+       (target_date.month == 8 and target_date.day == 30):
         return None, "RESMI_TATIL"
 
     formatted_date_str = target_date.strftime("%Y-%m-%d")
@@ -237,7 +243,6 @@ def fetch_sau_menu_by_date(target_date: date):
             items = []
             for elem in elements:
                 t = elem.get_text(strip=True)
-                # SABİS Metin Formatı: "Sebze Çorba - 110 kcal"
                 if "kcal" in t and ("-" in t or "–" in t):
                     parts = re.split(r'[-–]', t)
                     if len(parts) >= 2:
@@ -255,29 +260,14 @@ def fetch_sau_menu_by_date(target_date: date):
                                 "fat": f
                             })
             
-            if items:
+            if len(items) == 0:
+                return None, "EMPTY_SABIS"
+            else:
                 return items, "OK"
     except Exception as e:
         print(f"Scraping Hatası: {e}")
 
-    # Bugün veya Salı (27 Ekim) için SABİS görselindeki gerçek verileri göster
-    if target_date.day == 27 and target_date.month == 10:
-        return [
-            {"name": "Sebze Çorba", "kcal": 110, "protein": "3g", "carb": "16g", "fat": "3g"},
-            {"name": "Gar.Et Döner", "kcal": 548, "protein": "34g", "carb": "15g", "fat": "27g"},
-            {"name": "ETSİZ PATLICAN YEMEĞİ (MERKEZ YEMEKHANEDE)", "kcal": 180, "protein": "4g", "carb": "18g", "fat": "9g"},
-            {"name": "Abant Kebabı", "kcal": 420, "protein": "28g", "carb": "12g", "fat": "22g"},
-            {"name": "Bulgur Pilavı", "kcal": 281, "protein": "7g", "carb": "54g", "fat": "5g"},
-            {"name": "Ayran", "kcal": 84, "protein": "4g", "carb": "5g", "fat": "4g"}
-        ], "OK"
-    
-    # Varsayılan Genel Menü (Web Scraping geçici başarısız olursa)
-    return [
-        {"name": "Mercimek Çorbası", "kcal": 145, "protein": "6g", "carb": "20g", "fat": "4g"},
-        {"name": "Gar. Et Döner / Kuru Fasulye", "kcal": 520, "protein": "30g", "carb": "22g", "fat": "25g"},
-        {"name": "Bulgur Pilavı / Pirinç Pilavı", "kcal": 281, "protein": "7g", "carb": "54g", "fat": "5g"},
-        {"name": "Taze Ayran / Meyve", "kcal": 84, "protein": "4g", "carb": "5g", "fat": "4g"}
-    ], "OK"
+    return None, "EMPTY_SABIS"
 
 # ==========================================
 # 6. AKADEMİK BİLGİ TABANI (KNOWLEDGE BASE)
@@ -318,11 +308,11 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     if not client:
         return "⚠️ GROQ_API_KEY bulunamadı. Lütfen Hugging Face Secrets alanına GROQ_API_KEY ekleyin."
 
-    menu_items, _ = fetch_sau_menu_by_date(date.today())
-    if menu_items:
+    menu_items, status = fetch_sau_menu_by_date(date.today())
+    if menu_items and status == "OK":
         menu_summary = "\n".join([f"• {m['name']} ({m['kcal']} kcal - P:{m['protein']} C:{m['carb']} F:{m['fat']})" for m in menu_items])
     else:
-        menu_summary = "Bugün yemekhanede yemek bulunmamaktadır (Hafta Sonu / Resmi Tatil)."
+        menu_summary = "Bugün yemekhanede yemek servisi bulunmamaktadır (Resmi Tatil / Hafta Sonu)."
 
     system_prompt = f"""
     Sen Sakarya Üniversitesi (SAÜ) öğrencilerinin resmi Akıllı Kampüs Asistanısın. Öğrencilerin zaman kaybetmeden doğru bilgiye ulaşmalarını sağlamak senin ana görevindir.
@@ -487,24 +477,35 @@ with tab_chat:
         st.session_state.messages.append(assistant_msg)
 
 # ------------------------------------------
-# SEKME 2: YEMEKHANE & DİNAMİK TARİH BAZLI KALORİ / BESİN DEĞERLERİ
+# SEKME 2: YEMEKHANE & SADECE İÇİNDE BULUNULAN AYI GÖSTEREN TAKVİM
 # ------------------------------------------
 with tab_food:
     st.subheader("🍱 SABİS Canlı Yemek Menüsü & Besin Değerleri")
     st.caption("İstediğiniz tarihi seçerek SABİS yemekhanesindeki o güne özel menüyü ve besin değerlerini görebilirsiniz.")
 
-    selected_date = st.date_input("🗓️ Menüsünü Görmek İstediğiniz Tarihi Seçin", value=date.today())
+    # İçinde bulunulan ayın ilk ve son günlerini dinamik olarak kısıtla
+    today = date.today()
+    first_day_of_month = date(today.year, today.month, 1)
+    _, last_day_num = calendar.monthrange(today.year, today.month)
+    last_day_of_month = date(today.year, today.month, last_day_num)
+
+    selected_date = st.date_input(
+        "🗓️ Menüsünü Görmek İstediğiniz Tarihi Seçin (Sadece İçinde Bulunduğumuz Ay Seçilebilir)", 
+        value=today,
+        min_value=first_day_of_month,
+        max_value=last_day_of_month
+    )
     
     menu_items, status = fetch_sau_menu_by_date(selected_date)
 
     if status == "HAFTA_SONU":
         st.warning(f"⚠️ **{selected_date.strftime('%d.%m.%Y')}** tarihi Hafta Sonu gününe denk gelmektedir. **Hafta sonları üniversite yemekhanesinde yemek hizmeti sunulmamaktadır.**")
     elif status == "29_EKIM_TATIL":
-        st.warning(f"🇹🇷 **{selected_date.strftime('%d.%m.%Y')} (29 Ekim Cumhuriyet Bayramı)** Resmi Tatil olması sebebiyle üniversite yemekhanesinde yemek servisi yapılmamaktadır.")
+        st.warning(f"🇹🇷 **{selected_date.strftime('%d.%m.%Y')} (Arefe / 29 Ekim Cumhuriyet Bayramı)** Resmi Tatil olması sebebiyle üniversite yemekhanesinde yemek servisi yapılmamaktadır.")
     elif status == "RESMI_TATIL":
         st.warning(f"⚠️ **{selected_date.strftime('%d.%m.%Y')}** tarihi Resmi Tatil olması sebebiyle yemekhane kapalıdır.")
-    elif not menu_items:
-        st.info(f"ℹ️ **{selected_date.strftime('%d.%m.%Y')}** tarihi için SABİS sisteminde yemek menüsü bulunmamaktadır.")
+    elif status == "EMPTY_SABIS" or not menu_items:
+        st.info(f"ℹ️ **{selected_date.strftime('%d.%m.%Y')}** tarihi için SABİS sisteminde yayınlanmış bir yemek menüsü bulunmamaktadır.")
     else:
         total_kcal = sum([item['kcal'] for item in menu_items])
         st.info(f"💡 **{selected_date.strftime('%d.%m.%Y')} Menüsü Toplam Kalorisi:** ~{total_kcal} kcal")
