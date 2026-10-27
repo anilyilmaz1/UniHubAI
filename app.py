@@ -58,6 +58,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# SAF FAKÜLTE LİSTESİ
+FAKULTELER = [
+    "İşletme Fakültesi",
+    "İlahiyat Fakültesi",
+    "Mühendislik Fakültesi",
+    "Fen-Edebiyat Fakültesi",
+    "Siyasal Bilgiler Fakültesi"
+]
+
 # --- 4. SESSION STATE İLKELENDİRME ---
 if "user_authenticated" not in st.session_state:
     st.session_state.user_authenticated = False
@@ -65,31 +74,60 @@ if "user_email" not in st.session_state:
     st.session_state.user_email = ""
 if "user_role" not in st.session_state:
     st.session_state.user_role = "" # "ogrenci", "dekan", "memur", "admin"
+if "user_faculty" not in st.session_state:
+    st.session_state.user_faculty = ""
 if "selected_question" not in st.session_state:
     st.session_state.selected_question = ""
+
 if "submitted_tickets" not in st.session_state:
-    # Başlangıç test verisi
+    # Başlangıç Test Verileri (Fakülte bazlı ayrıştırılmış)
     st.session_state.submitted_tickets = [
         {
-            "tracking_code": "#KAMPUS-8463",
+            "tracking_code": "#KAMPUS-1001",
             "student_hash": "KULLANICI_HASH_57B3B7",
-            "raw_text": "Prof. Dr. Mehmet Kaya ders saatlerine uymuyor.",
-            "scrubbed_text": "İlahiyat Fakültesi ders sorumlusu Prof. Dr. Mehmet Kaya'nın ders saatlerine uymadığı bildirilmiştir.",
+            "faculty": "İşletme Fakültesi",
+            "raw_text": "Prof. Dr. Ahmet Yılmaz ders saatlerine uymuyor.",
+            "scrubbed_text": "İşletme Fakültesi ders sorumlusu Prof. Dr. Ahmet Yılmaz'ın ders saatlerine uymadığı bildirilmiştir.",
             "standard_category": "Akademik / Ders İşleyişi (Özel Güvenlikli)",
-            "target_department": "İlahiyat Fakültesi Dekanlığı",
+            "target_department": "İşletme Fakültesi Dekanlığı",
             "urgency_score": "Orta",
-            "location": "İlahiyat Fakültesi",
+            "location": "İşletme Fakültesi Amfi 2",
             "status": "BEKLEYEN_İDARE_ONAYI"
         },
         {
-            "tracking_code": "#KAMPUS-1209",
+            "tracking_code": "#KAMPUS-1002",
             "student_hash": "KULLANICI_HASH_A9C4E2",
-            "raw_text": "M4 blok 201 nolu sınıfta priz çalışmıyor ve Wi-Fi kopuyor.",
-            "scrubbed_text": "Mühendislik Fakültesi M4 Blok 201 nolu sınıfta elektrik prizi arızalı ve Wi-Fi bağlantısı kesintili.",
+            "faculty": "İşletme Fakültesi",
+            "raw_text": "İşletme fakültesi 102 nolu sınıfta priz patladı ve Wi-Fi çalışmıyor.",
+            "scrubbed_text": "İşletme Fakültesi Derslik 102'de elektrik prizi arızalı ve internet bağlantısı kopuk.",
             "standard_category": "Elektrik / Bakım",
-            "target_department": "Yapı İşleri ve Teknik Daire Başkanlığı",
+            "target_department": "Yapı İşleri / İşletme Teknik Ekip",
             "urgency_score": "Yüksek",
-            "location": "Mühendislik Fakültesi M4 Blok 201",
+            "location": "İşletme Fakültesi Derslik 102",
+            "status": "BEKLEYEN_İDARE_ONAYI"
+        },
+        {
+            "tracking_code": "#KAMPUS-2001",
+            "student_hash": "KULLANICI_HASH_B8F9A1",
+            "faculty": "İlahiyat Fakültesi",
+            "raw_text": "İlahiyat fakültesinde vize notları zamanında açıklanmadı.",
+            "scrubbed_text": "İlahiyat Fakültesi ders vize sonuçlarının sisteme geç girildiği iletilmiştir.",
+            "standard_category": "Akademik / Ders İşleyişi (Özel Güvenlikli)",
+            "target_department": "İlahiyat Fakültesi Dekanlığı",
+            "urgency_score": "Düşük",
+            "location": "İlahiyat Fakültesi Blok B",
+            "status": "BEKLEYEN_İDARE_ONAYI"
+        },
+        {
+            "tracking_code": "#KAMPUS-2002",
+            "student_hash": "KULLANICI_HASH_C3D2E1",
+            "faculty": "İlahiyat Fakültesi",
+            "raw_text": "İlahiyat fakültesi lavabolarında su akmıyor.",
+            "scrubbed_text": "İlahiyat Fakültesi 1. kat lavabolarında tesisat arızası ve su kesintisi bildirildi.",
+            "standard_category": "Tesisat / Su",
+            "target_department": "Yapı İşleri / İlahiyat Teknik Ekip",
+            "urgency_score": "Yüksek",
+            "location": "İlahiyat Fakültesi 1. Kat",
             "status": "BEKLEYEN_İDARE_ONAYI"
         }
     ]
@@ -144,7 +182,7 @@ def ask_groq_assistant(query: str) -> str:
     except Exception as e:
         return f"Hata: {str(e)}"
 
-def process_issue_pipeline(raw_description: str, location: str, category: str, student_id: str):
+def process_issue_pipeline(raw_description: str, location: str, category: str, faculty: str, student_id: str):
     hash_obj = hashlib.sha256(student_id.encode())
     student_hash = f"KULLANICI_HASH_{hash_obj.hexdigest()[:6].upper()}"
     tracking_code = f"#KAMPUS-{random.randint(1000, 9999)}"
@@ -154,10 +192,11 @@ def process_issue_pipeline(raw_description: str, location: str, category: str, s
             "is_appropriate": True,
             "tracking_code": tracking_code,
             "student_hash": student_hash,
+            "faculty": faculty,
             "raw_text": raw_description,
-            "scrubbed_text": f"{location} konumunda {category} ile ilgili bildirim oluşturulmuştur.",
+            "scrubbed_text": f"{faculty} bünyesinde {category} ile ilgili resmi bildirim oluşturulmuştur.",
             "standard_category": category,
-            "target_department": "Yapı İşleri / Dekanlık",
+            "target_department": f"{faculty} Dekanlığı / Teknik Birimi",
             "urgency_score": "Orta",
             "location": location,
             "status": "BEKLEYEN_İDARE_ONAYI"
@@ -172,11 +211,11 @@ def process_issue_pipeline(raw_description: str, location: str, category: str, s
         "is_appropriate": true veya false,
         "scrubbed_text": "Öğrenci kimliğinden arındırılmış resmi metin",
         "standard_category": "{category}",
-        "target_department": "İlgili Daire Başkanlığı / Dekanlık",
+        "target_department": "{faculty} Yetkili Birimi",
         "urgency_score": "Düşük/Orta/Yüksek",
         "status": "BEKLEYEN_İDARE_ONAYI"
     }}
-    Gelen Metin: "{raw_description}" | Konum: "{location}" | Kategori: "{category}"
+    Gelen Metin: "{raw_description}" | Fakülte: "{faculty}" | Konum: "{location}" | Kategori: "{category}"
     """
     try:
         completion = client.chat.completions.create(
@@ -188,6 +227,7 @@ def process_issue_pipeline(raw_description: str, location: str, category: str, s
         res = json.loads(completion.choices[0].message.content)
         res["tracking_code"] = tracking_code
         res["student_hash"] = student_hash
+        res["faculty"] = faculty
         res["raw_text"] = raw_description
         res["location"] = location
         return res
@@ -197,53 +237,62 @@ def process_issue_pipeline(raw_description: str, location: str, category: str, s
 @st.dialog("🛠️ Kampüs Sorun Bildirimi (Arıza / Şikayet)")
 def open_issue_modal():
     st.caption("🛡️ **Çift Taraflı Kör Güvenlik:** Kimliğiniz HASH koduna dönüştürülür ve yapay zeka tarafından anonimleştirilir.")
+    
+    c_fac, c_cat = st.columns(2)
+    with c_fac:
+        faculty = st.selectbox("İlgili Fakülteyi Seçin", FAKULTELER)
+    with c_cat:
+        category = st.selectbox("Arıza / Bildirim Kategorisi", [
+            "Elektrik / Bakım", 
+            "Tesisat / Su", 
+            "İnternet / Wi-Fi", 
+            "Temizlik", 
+            "Mobilya / Ekipman",
+            "Akademik / Ders İşleyişi (Özel Güvenlikli)",
+            "Güvenlik",
+            "Diğer"
+        ])
+
     c_name, c_sabis = st.columns(2)
     with c_name:
         name = st.text_input("Adınız Soyadınız", placeholder="Ahmet Yılmaz")
     with c_sabis:
         student_id = st.text_input("SABİS / Öğrenci No", placeholder="B211210001")
         
-    location = st.text_input("Konum", placeholder="Örn: Mühendislik Fakültesi M4 Blok 201")
-    category = st.selectbox("Arıza / Bildirim Kategorisi", [
-        "Elektrik / Bakım", 
-        "Tesisat / Su", 
-        "İnternet / Wi-Fi", 
-        "Temizlik", 
-        "Mobilya / Ekipman",
-        "Akademik / Ders İşleyişi (Özel Güvenlikli)",
-        "Güvenlik",
-        "Diğer"
-    ])
-    description = st.text_area("Sorun Açıklaması", placeholder="Örn: M4 201 nolu sınıfta priz çalışmıyor...")
+    location = st.text_input("Spesifik Konum (Sınıf/Amfi/Blok)", placeholder="Örn: Derslik 102 / Amfi 1")
+    description = st.text_area("Sorun Açıklaması", placeholder="Örn: Sınıfta priz çalışmıyor...")
     
     if st.button("🚀 Güvenli & Anonim Gönder", type="primary", use_container_width=True):
         if name and student_id and location and description:
-            with st.spinner("AI Scrubbing ve Otomatik Rotalama Çalışıyor..."):
-                res = process_issue_pipeline(description, location, category, student_id)
+            with st.spinner("AI Scrubbing ve Fakülteye Rotalama Çalışıyor..."):
+                res = process_issue_pipeline(description, location, category, faculty, student_id)
             if not res.get("is_appropriate", True):
                 st.error("❌ Uygunsuz içerik engellendi (AI Moderasyon Filtresi).")
             else:
                 st.session_state.submitted_tickets.append(res)
-                st.success(f"✅ Bildiriminiz Alındı! Anonim Takip Kodunuz: `{res.get('tracking_code')}`")
+                st.success(f"✅ Bildiriminiz {faculty} Birimine İletildi! Takip Kodunuz: `{res.get('tracking_code')}`")
         else:
             st.warning("Lütfen tüm zorunlu alanları doldurunuz.")
 
 # --- 6. KURUMSAL GİRİŞ PORTALI ---
 if not st.session_state.user_authenticated:
     st.markdown("<h2 style='text-align: center;'>🌐 UniHub AI - Kurumsal Giriş Portalı</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Rol tabanlı yetkilendirme için lütfen kurumsal e-posta adresinizle giriş yapın.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Fakülte bazlı yetkilendirme için lütfen kurumsal e-posta adresinizle giriş yapın.</p>", unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.form("login_form"):
-            email_input = st.text_input("SAÜ E-Posta Adresi", placeholder="örn: ogrenci@ogr.sakarya.edu.tr")
+            email_input = st.text_input("SAÜ E-Posta Adresi", placeholder="örn: dekan.isletme@sakarya.edu.tr")
             password_input = st.text_input("Şifre", type="password", placeholder="••••••••")
+            
+            form_fac = st.selectbox("Bağlı Olduğunuz Fakülte (İdare & Memurlar İçin)", FAKULTELER)
             login_btn = st.form_submit_button("🔑 Manuel Giriş Yap", use_container_width=True)
             
             if login_btn and email_input:
                 email_lower = email_input.lower()
                 st.session_state.user_authenticated = True
                 st.session_state.user_email = email_input
+                st.session_state.user_faculty = form_fac
                 
                 if "admin" in email_lower:
                     st.session_state.user_role = "admin"
@@ -253,6 +302,7 @@ if not st.session_state.user_authenticated:
                     st.session_state.user_role = "memur"
                 else:
                     st.session_state.user_role = "ogrenci"
+                    st.session_state.user_faculty = ""
                 st.rerun()
 
         st.markdown("---")
@@ -262,32 +312,48 @@ if not st.session_state.user_authenticated:
         with q1:
             if st.button("🎓 Öğrenci Girişi", use_container_width=True):
                 st.session_state.user_authenticated = True
-                st.session_state.user_email = "ahmet.yilmaz@ogr.sakarya.edu.tr"
+                st.session_state.user_email = "ogrenci@ogr.sakarya.edu.tr"
                 st.session_state.user_role = "ogrenci"
+                st.session_state.user_faculty = ""
                 st.rerun()
-            if st.button("🏛️ Dekan Girişi (Akademik)", use_container_width=True):
+            if st.button("🏛️ İşletme Dekanı Girişi", use_container_width=True):
                 st.session_state.user_authenticated = True
-                st.session_state.user_email = "ilahiyat.dekan@sakarya.edu.tr"
+                st.session_state.user_email = "dekan.isletme@sakarya.edu.tr"
                 st.session_state.user_role = "dekan"
+                st.session_state.user_faculty = "İşletme Fakültesi"
+                st.rerun()
+            if st.button("🏛️ İlahiyat Dekanı Girişi", use_container_width=True):
+                st.session_state.user_authenticated = True
+                st.session_state.user_email = "dekan.ilahiyat@sakarya.edu.tr"
+                st.session_state.user_role = "dekan"
+                st.session_state.user_faculty = "İlahiyat Fakültesi"
                 st.rerun()
         with q2:
-            if st.button("👷 Memur Girişi (Teknik Ekip)", use_container_width=True):
+            if st.button("👷 İşletme Memuru Girişi", use_container_width=True):
                 st.session_state.user_authenticated = True
-                st.session_state.user_email = "bakim.memur@sakarya.edu.tr"
+                st.session_state.user_email = "memur.isletme@sakarya.edu.tr"
                 st.session_state.user_role = "memur"
+                st.session_state.user_faculty = "İşletme Fakültesi"
                 st.rerun()
-            if st.button("👑 Sistem Admin Girişi", use_container_width=True):
+            if st.button("👷 İlahiyat Memuru Girişi", use_container_width=True):
+                st.session_state.user_authenticated = True
+                st.session_state.user_email = "memur.ilahiyat@sakarya.edu.tr"
+                st.session_state.user_role = "memur"
+                st.session_state.user_faculty = "İlahiyat Fakültesi"
+                st.rerun()
+            if st.button("👑 Sistem Admin Girişi (Tüm Kampüs)", use_container_width=True):
                 st.session_state.user_authenticated = True
                 st.session_state.user_email = "admin@sakarya.edu.tr"
                 st.session_state.user_role = "admin"
+                st.session_state.user_faculty = "Tüm Fakülteler"
                 st.rerun()
 
-# --- 7. OTURUM AÇILDIKTAN SONRAKİ ROL TABANLI EKRANLAR ---
+# --- 7. OTURUM AÇILDIKTAN SONRAKİ ROL & FAKÜLTE TABANLI EKRANLAR ---
 else:
     # SOL MENÜ
     with st.sidebar:
         st.title("🌐 UniHub AI")
-        st.caption(f"👤 Aktif Kullanıcı: **{st.session_state.user_email}**")
+        st.caption(f"👤 Kullanıcı: **{st.session_state.user_email}**")
         
         role_label = {
             "ogrenci": "🎓 Öğrenci",
@@ -297,12 +363,15 @@ else:
         }.get(st.session_state.user_role, "Bilinmiyor")
         
         st.caption(f"🛡️ Rol: **{role_label}**")
+        if st.session_state.user_faculty:
+            st.caption(f"📍 Fakülte: **{st.session_state.user_faculty}**")
         st.markdown("---")
         
         if st.button("🚪 Çıkış Yap", use_container_width=True):
             st.session_state.user_authenticated = False
             st.session_state.user_email = ""
             st.session_state.user_role = ""
+            st.session_state.user_faculty = ""
             st.rerun()
 
     # A) 🎓 ÖĞRENCİ EKRANI
@@ -310,7 +379,7 @@ else:
         st.markdown("""
         <div class="welcome-card">
             <h3>UniHub Öğrenci Asistanı 🎓</h3>
-            <p>SABİS Canlı Menü, Kütüphane & Kafe Yoğunluğu hakkında sorular sorabilir, 🛠️ butonundan anonim arıza/şikayet bildirebilirsiniz.</p>
+            <p>SABİS Canlı Menü, Kütüphane & Kafe Yoğunluğu hakkında sorular sorabilir, 🛠️ butonundan fakültenize özel anonim arıza/şikayet bildirebilirsiniz.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -339,21 +408,24 @@ else:
                 st.subheader("📍 Kafe Canlı Yoğunluk Analizi")
                 st.bar_chart(df_chart, height=200, color="#1b263b")
 
-    # B) 🏛️ DEKAN / AKADEMİK İDARE EKRANI (SADECE AKADEMİK BİLETLER)
+    # B) 🏛️ DEKAN EKRANI (SADECE KENDİ FAKÜLTESİNİN AKADEMİK BİLETLERİ)
     elif st.session_state.user_role == "dekan":
-        st.header("🏛️ İlahiyat / Mühendislik Fakültesi Dekanlık Paneli")
-        st.caption("🔒 Yalnızca dekanlık yetki alanındaki **Akademik & Ders İşleyişi** şikayetleri gösterilmektedir. Teknik arızalar gösterilmez.")
+        st.header(f"🏛️ {st.session_state.user_faculty} Dekanlık Paneli")
+        st.caption(f"🔒 İzolasyon Kuralı: Yalnızca **{st.session_state.user_faculty}** bünyesindeki Akademik Şikayetler listelenmektedir. Başka fakültelerin verileri gizlidir.")
         st.markdown("---")
 
-        academic_tickets = [t for t in st.session_state.submitted_tickets if "Akademik" in t.get("standard_category", "")]
+        faculty_academic_tickets = [
+            t for t in st.session_state.submitted_tickets 
+            if t.get("faculty") == st.session_state.user_faculty and "Akademik" in t.get("standard_category", "")
+        ]
 
-        if not academic_tickets:
-            st.info("💡 Dekanlığa iletilmiş bekleyen akademik şikayet bulunmamaktadır.")
+        if not faculty_academic_tickets:
+            st.info(f"💡 {st.session_state.user_faculty} bünyesinde bekleyen akademik şikayet bulunmamaktadır.")
         else:
-            st.subheader(f"📩 Bekleyen Akademik Bildirimler ({len(academic_tickets)})")
-            for idx, ticket in enumerate(academic_tickets):
+            st.subheader(f"📩 Bekleyen Akademik Bildirimler ({len(faculty_academic_tickets)})")
+            for idx, ticket in enumerate(faculty_academic_tickets):
                 with st.container():
-                    st.markdown(f"#### 📌 Talep Kodu: `{ticket.get('tracking_code')}` | Gönderen: `{ticket.get('student_hash')}`")
+                    st.markdown(f"#### 📌 Talep Kodu: `{ticket.get('tracking_code')}` | Fakülte: `{ticket.get('faculty')}`")
                     st.success(f"**📄 Anonim Bildirim Metni:** {ticket.get('scrubbed_text')}")
                     
                     c1, c2 = st.columns(2)
@@ -370,28 +442,31 @@ else:
                         if st.button(f"🏛️ Bölüm Başkanına İlet", key=f"dek_dept_{idx}", type="primary"):
                             st.success(f"{ticket.get('tracking_code')} Bölüm Başkanlığına iletildi.")
                     with b2:
-                        if st.button(f"🔎 İnceleme Başlat", key=f"dek_invest_{idx}"):
+                        if st.button(f"🔎 Resmi İnceleme Başlat", key=f"dek_invest_{idx}"):
                             st.info(f"{ticket.get('tracking_code')} için resmi inceleme başlatıldı.")
                     with b3:
                         if st.button(f"❌ Reddet / Kapat", key=f"dek_rej_{idx}"):
                             st.warning(f"{ticket.get('tracking_code')} talebi kapatıldı.")
                 st.markdown("---")
 
-    # C) 👷 GÖREVLİ MEMUR / TEKNİK EKİP EKRANI (SADECE TEKNİK / FİZİKSEL ARİZALAR)
+    # C) 👷 GÖREVLİ MEMUR EKRANI (SADECE KENDİ FAKÜLTESİNİN TEKNİK ARİZALARI)
     elif st.session_state.user_role == "memur":
-        st.header("👷 Yapı İşleri & Teknik Bakım Memuru Paneli")
-        st.caption("🔒 Yalnızca kampüs içi **Elektrik, Priz, İnternet, Tesisat ve Temizlik** arızaları gösterilmektedir. Akademik şikayetler gizlenmiştir.")
+        st.header(f"👷 {st.session_state.user_faculty} Teknik Bakım & Memur Paneli")
+        st.caption(f"🔒 İzolasyon Kuralı: Yalnızca **{st.session_state.user_faculty}** bünyesindeki Elektrik, Tesisat ve Bakım arızaları gösterilmektedir. Diğer fakülteler ve akademik şikayetler kapalıdır.")
         st.markdown("---")
 
-        technical_tickets = [t for t in st.session_state.submitted_tickets if "Akademik" not in t.get("standard_category", "")]
+        faculty_tech_tickets = [
+            t for t in st.session_state.submitted_tickets 
+            if t.get("faculty") == st.session_state.user_faculty and "Akademik" not in t.get("standard_category", "")
+        ]
 
-        if not technical_tickets:
-            st.info("💡 Teknik ekibe atanmış bekleyen arıza kaydı bulunmamaktadır.")
+        if not faculty_tech_tickets:
+            st.info(f"💡 {st.session_state.user_faculty} bünyesinde çözüm bekleyen teknik arıza kaydı bulunmamaktadır.")
         else:
-            st.subheader(f"🛠️ İşlem Bekleyen Arıza Kayıtları ({len(technical_tickets)})")
-            for idx, ticket in enumerate(technical_tickets):
+            st.subheader(f"🛠️ İşlem Bekleyen Arıza Kayıtları ({len(faculty_tech_tickets)})")
+            for idx, ticket in enumerate(faculty_tech_tickets):
                 with st.container():
-                    st.markdown(f"#### 📌 Talep Kodu: `{ticket.get('tracking_code')}` | Gönderen: `{ticket.get('student_hash')}`")
+                    st.markdown(f"#### 📌 Talep Kodu: `{ticket.get('tracking_code')}` | Fakülte: `{ticket.get('faculty')}`")
                     st.info(f"**🔧 Arıza Detayı:** {ticket.get('scrubbed_text')}")
                     
                     c1, c2 = st.columns(2)
@@ -402,7 +477,7 @@ else:
                         st.write(f"**Atanan Birim:** {ticket.get('target_department')}")
                         st.write(f"**Aciliyet:** 🔴 {ticket.get('urgency_score')}")
 
-                    st.markdown("**🛠️ Teknik Ekip Saha Aksiyonu:**")
+                    st.markdown("**🛠️ Teknik Memur Saha Aksiyonu:**")
                     b1, b2, b3 = st.columns(3)
                     with b1:
                         if st.button(f"🚚 Saha Ekibine Atandı", key=f"mem_assign_{idx}", type="primary"):
@@ -411,30 +486,31 @@ else:
                         if st.button(f"✅ Arıza Çözüldü", key=f"mem_done_{idx}"):
                             st.success(f"{ticket.get('tracking_code')} arızası giderildi ve kapatıldı.")
                     with b3:
-                        if st.button(f"📦 Yedek Parça Bekleniyor", key=f"mem_wait_{idx}"):
-                            st.warning(f"{ticket.get('tracking_code')} için parça siparişi verildi.")
+                        if st.button(f"📦 Parça Bekleniyor", key=f"mem_wait_{idx}"):
+                            st.warning(f"{ticket.get('tracking_code')} için sipariş geçildi.")
                 st.markdown("---")
 
-    # D) 👑 SİSTEM ADMİN EKRANI (TÜM BİLETLER & GENEL BAKIŞ)
+    # D) 👑 SİSTEM ADMİN EKRANI (TÜM FAKÜLTELER)
     elif st.session_state.user_role == "admin":
-        st.header("👑 SAÜ Kampüs Operasyon Yönetim Merkezi (Admin)")
-        st.caption("🌐 Tüm kategorilerdeki gelen bildirimler ve yetki alanı genel göstergeleri.")
+        st.header("👑 SAÜ Kampüs Operasyon Yönetim Merkezi (Sistem Admin)")
+        st.caption("🌐 Tüm fakültelerin biletleri ve merkezi istatistiksel göstergeler.")
         st.markdown("---")
 
         kpi1, kpi2, kpi3 = st.columns(3)
         with kpi1:
-            st.metric("Toplam Bildirim", len(st.session_state.submitted_tickets))
+            st.metric("Toplam Kampüs Bildirimi", len(st.session_state.submitted_tickets))
         with kpi2:
-            acad_count = len([t for t in st.session_state.submitted_tickets if "Akademik" in t.get("standard_category", "")])
-            st.metric("Akademik Şikayetler", acad_count)
+            isletme_count = len([t for t in st.session_state.submitted_tickets if t.get("faculty") == "İşletme Fakültesi"])
+            st.metric("İşletme Fakültesi Biletleri", isletme_count)
         with kpi3:
-            tech_count = len([t for t in st.session_state.submitted_tickets if "Akademik" not in t.get("standard_category", "")])
-            st.metric("Teknik Arızalar", tech_count)
+            ilahiyat_count = len([t for t in st.session_state.submitted_tickets if t.get("faculty") == "İlahiyat Fakültesi"])
+            st.metric("İlahiyat Fakültesi Biletleri", ilahiyat_count)
 
         st.markdown("---")
-        st.subheader("📑 Sistemdeki Tüm Aktif Bildirimler")
+        st.subheader("📑 Kampüsteki Tüm Aktif Bildirimler")
         for idx, ticket in enumerate(st.session_state.submitted_tickets):
-            with st.expander(f"📌 {ticket.get('tracking_code')} - {ticket.get('standard_category')} ({ticket.get('location')})"):
+            with st.expander(f"📌 {ticket.get('tracking_code')} - {ticket.get('faculty')} ({ticket.get('standard_category')})"):
                 st.write(f"**Gönderen HASH:** `{ticket.get('student_hash')}`")
                 st.write(f"**Anonim Metin:** {ticket.get('scrubbed_text')}")
+                st.write(f"**Konum:** {ticket.get('location')}")
                 st.write(f"**Atanan Birim:** {ticket.get('target_department')}")
