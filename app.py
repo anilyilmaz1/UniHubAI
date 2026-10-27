@@ -136,9 +136,9 @@ def ask_groq_assistant(query: str) -> str:
     {canli_menu}
 
     Bilinen Bilgiler:
-    - Yemekhane Saatleri: Öğle (11:30 - 14:00), Akşam (16:30 - 19:00). Her gün vegan ve glütensiz seçenek sunulur.
+    - Yemekhane Saatleri: 11:00 - 17:00. Her gün vegan ve glütensiz seçenek sunulur.
     - Kütüphane: Merkez Kütüphane 7/24 açıktır.
-    - Otobüs/Ulaşım: Söğütlü ve Kampüs hatları ana duraklardan 15 dakikada bir kalkar.
+    - Otobüs/Ulaşım: Arifiye ve Kampüs hatları ana duraklardan 15 dakikada bir kalkar.
     - Kafeler: 12:00-14:00 saatleri arası en yoğun zaman dilimidir.
 
     KURAL: Yemek menüsü sorulduğunda web sitesinden çekilen yukarıdaki güncel menüyü, saatleri ve vegan/glütensiz bilgisini şık bir listeyle sun.
