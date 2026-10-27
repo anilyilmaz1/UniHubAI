@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 from bs4 import BeautifulSoup
 from groq import Groq
-import plotly.express as px
+import plotly.graph_objects as go
 
 # ==========================================
 # 1. SAYFA YAPILANDIRMASI
@@ -87,27 +87,36 @@ st.markdown("""
         font-weight: 600;
         margin-right: 4px;
     }
+    .gmaps-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 15px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. KAFE YOĞUNLUK VERİ VERİTABANI & ALGORİTMASI
+# 4. KAFE YOĞUNLUK VERİ TABANI & GOOGLE MAPS GRAFİK MOTORU
 # ==========================================
 CAFE_HOURLY_DATA = {
-    "Lumo Coffee": [5, 5, 10, 25, 45, 70, 85, 95, 90, 75, 60, 40, 20, 10, 5, 5],
-    "Coffy SAÜ": [10, 15, 30, 60, 85, 95, 90, 80, 75, 85, 90, 65, 35, 15, 5, 5],
-    "Adıbahçe": [0, 0, 10, 20, 50, 75, 80, 85, 90, 95, 85, 70, 40, 15, 5, 0],
-    "Taş Kafe": [5, 10, 20, 40, 65, 80, 75, 70, 60, 50, 40, 30, 15, 5, 0, 0]
+    "Lumo Coffee": [0, 5, 15, 35, 65, 85, 95, 90, 80, 70, 55, 30, 15, 5, 0, 0, 0, 0],
+    "Coffy SAÜ": [0, 10, 25, 50, 80, 95, 90, 85, 75, 85, 90, 60, 30, 10, 0, 0, 0, 0],
+    "Adıbahçe": [0, 0, 10, 20, 45, 70, 80, 85, 90, 95, 85, 65, 35, 10, 0, 0, 0, 0],
+    "Taş Kafe": [0, 5, 15, 30, 60, 75, 70, 65, 55, 45, 35, 20, 10, 0, 0, 0, 0, 0]
 }
-HOURS_LABELS = [f"{h:02d}:00" for h in range(8, 24)]
+
+HOURS_LABELS = [f"{h:02d}" for h in range(6, 24)]  # 06 - 23 arası Google Maps stili
 
 def get_current_cafe_density(cafe_name: str) -> tuple:
     current_hour = datetime.now().hour
-    if current_hour < 8 or current_hour >= 24:
-        return 5, "🟢 Kapalı / Sakin", "Şu an kafeler kapalı veya boş."
+    if current_hour < 6 or current_hour >= 24:
+        return 0, "🟢 Kapalı / Sakin", "Şu an kafeler kapalı veya boş."
     
-    idx = current_hour - 8
-    density = CAFE_HOURLY_DATA.get(cafe_name, [30]*16)[idx]
+    idx = current_hour - 6
+    density = CAFE_HOURLY_DATA.get(cafe_name, [30]*18)[idx]
     
     if density >= 80:
         return density, "🔴 Çok Yoğun (Pik Saat)", "Oturacak masa bulmak zor olabilir."
@@ -115,6 +124,59 @@ def get_current_cafe_density(cafe_name: str) -> tuple:
         return density, "🟡 Orta Yoğunluk", "Masa bulunabilir, sipariş sırası makul."
     else:
         return density, "🟢 Sakin & Müsait", "Rahatça ders çalışabilir veya oturabilirsiniz."
+
+def render_google_maps_populer_saatler(cafe_name: str, day_name: str = "Salı günleri"):
+    """Google Maps 'Popüler Saatler' arayüzünün birebir Plotly visual karşılığı"""
+    current_hour = datetime.now().hour
+    raw_data = CAFE_HOURLY_DATA.get(cafe_name, [30]*18)
+    
+    # Mevcut saati koyu turkuaz (#1d5d63), diğer saatleri standart Google Maps turkuazı (#528f95) yap
+    bar_colors = []
+    for h in range(6, 24):
+        if h == current_hour:
+            bar_colors.append('#1d5d63')  # Aktif saat vurgusu
+        else:
+            bar_colors.append('#528f95')  # Standart Google Maps sütun rengi
+
+    fig = go.Figure(data=[
+        go.Bar(
+            x=HOURS_LABELS,
+            y=raw_data,
+            marker_color=bar_colors,
+            marker_line_width=0,
+            hovertemplate="Saat: %{x}:00<br>Yoğunluk: %{y}%<extra></extra>",
+            width=0.75
+        )
+    ])
+
+    # Google Maps Eksen ve Layout Stili
+    fig.update_layout(
+        title=dict(
+            text=f"<b>Popüler saatler</b> &nbsp;&nbsp;<span style='font-size:13px; color:#5f6368;'>({day_name})</span>",
+            font=dict(size=18, color="#202124", family="Arial")
+        ),
+        xaxis=dict(
+            type='category',
+            showgrid=False,
+            showline=True,
+            linecolor='#dadce0',
+            tickvals=['06', '09', '12', '15', '18', '21'],
+            ticktext=['06', '09', '12', '15', '18', '21'],
+            tickfont=dict(size=12, color="#5f6368")
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='#f1f3f4',
+            showticklabels=False,
+            range=[0, 100]
+        ),
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        height=220,
+        margin=dict(l=10, r=10, t=40, b=30),
+        bargap=0.2
+    )
+    return fig
 
 # ==========================================
 # 5. CANLI VERİ ÇEKME (SABİS YEMEKHANE & KALORİ)
@@ -125,7 +187,7 @@ def fetch_sau_daily_menu_detailed():
     
     default_menu = [
         {"name": "Mercimek Çorbası", "kcal": 145, "protein": "6g", "carb": "20g", "fat": "4g"},
-        {"name": "Gar. Et Döner / Abant Kebabı", "kcal": 548, "protein": "32g", "carb": "12g", "fat": "28g"},
+        {"name": "Gar. Et Döner / Abant Kebabı", "kcal": 548, "protein": "32g", "carb": "28g", "fat": "28g"},
         {"name": "Etsiz Patlıcan Yemeği (Vejetaryen)", "kcal": 180, "protein": "4g", "carb": "18g", "fat": "9g"},
         {"name": "Bulgur Pilavı", "kcal": 281, "protein": "7g", "carb": "54g", "fat": "5g"},
         {"name": "Taze Ayran", "kcal": 84, "protein": "4g", "carb": "5g", "fat": "4g"}
@@ -211,9 +273,9 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     {SAU_AKADEMIK_BILGI}
 
     [MİSYON VE YANIT KURALLARI]
-    1. Not hesaplama sorularında (Örn: "Vizeden 45 aldım CC için finalden kaç lazım?") matematiği yap: (Vize*%40) + (Final*%60) = 50 formülünü kullan. SAÜ'nün **FİNALDEN EN AZ 50 ALMA BARAJI** kuralını mutlaka belirt!
+    1. Not hesaplama sorularında matematiği yap: (Vize*%40) + (Final*%60) = 50 formülünü kullan. SAÜ'nün **FİNALDEN EN AZ 50 ALMA BARAJI** kuralını belirt!
     2. Staj sorularında öğrencinin seçtiği fakülte/bölüm yönergesine sadık kal.
-    3. Kafe yoğunluğu sorulursa (Örn: "Lumo yoğun mu?") sistemdeki yoğunluk saatlerini aktar.
+    3. Kafe yoğunluğu sorulursa saatlik doluluk durumunu özetle ve kullanıcıya detaylı saatlik grafiği hemen alt alanda inceleyebileceğini belirt.
     4. Yanıtların net, sevimli, motive edici, maddeler (**bold**) halinde ve %100 doğru olsun.
     """
 
@@ -227,7 +289,6 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
         )
         return completion.choices[0].message.content
     except Exception:
-        # Fallback model
         try:
             completion = client.chat.completions.create(
                 model="qwen/qwen3.8-27b",
@@ -295,7 +356,7 @@ tab_chat, tab_food, tab_cafe, tab_bus, tab_calc = st.tabs([
 ])
 
 # ------------------------------------------
-# SEKME 1: AKILLI CHATBOT
+# SEKME 1: AKILLI CHATBOT (GRAFİK ENTEGRASYONLU)
 # ------------------------------------------
 with tab_chat:
     st.markdown("##### ⚡ Hızlı Sorular:")
@@ -318,6 +379,10 @@ with tab_chat:
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+            # Eğer sohbet mesajında kafe yoğunluğu sorulduysa altına Google Maps grafiğini bas
+            if "cafe_chart" in message:
+                fig_chat = render_google_maps_populer_saatler(message["cafe_chart"])
+                st.plotly_chart(fig_chat, use_container_width=True, config={'displayModeBar': False})
 
     user_query = st.chat_input("Akademik takvim, staj, not hesabı veya kampüs hakkında sorun...")
     if prompt_to_send:
@@ -330,11 +395,31 @@ with tab_chat:
 
         with st.chat_message("assistant"):
             with st.spinner("SAÜ bilgi tabanı ve veri kaynakları taranıyor..."):
-                history_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+                history_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages if "content" in m]
                 response_text = generate_academic_response(history_for_api, faculty, department)
                 st.markdown(response_text)
                 
-        st.session_state.messages.append({"role": "assistant", "content": response_text})
+                # Kafe sorgusu algılanırsa sohbet içinde Google Maps grafiğini göster
+                matched_cafe = None
+                query_lower = user_query.lower()
+                if "lumo" in query_lower:
+                    matched_cafe = "Lumo Coffee"
+                elif "coffy" in query_lower:
+                    matched_cafe = "Coffy SAÜ"
+                elif "adıbahçe" in query_lower or "adibahce" in query_lower:
+                    matched_cafe = "Adıbahçe"
+                elif "taş kafe" in query_lower or "tas kafe" in query_lower:
+                    matched_cafe = "Taş Kafe"
+                elif any(k in query_lower for k in ["kafe", "yoğun", "kalabalık"]):
+                    matched_cafe = "Lumo Coffee"
+
+                assistant_msg = {"role": "assistant", "content": response_text}
+                if matched_cafe:
+                    fig_inline = render_google_maps_populer_saatler(matched_cafe)
+                    st.plotly_chart(fig_inline, use_container_width=True, config={'displayModeBar': False})
+                    assistant_msg["cafe_chart"] = matched_cafe
+
+        st.session_state.messages.append(assistant_msg)
 
 # ------------------------------------------
 # SEKME 2: YEMEKHANE & KALORİ / BESİN DEĞERLERİ
@@ -362,36 +447,38 @@ with tab_food:
         """, unsafe_allow_html=True)
 
 # ------------------------------------------
-# SEKME 3: KAFE YOĞUNLUK ANALİZİ (GOOGLE MAPS TARZI)
+# SEKME 3: KAFE YOĞUNLUK ANALİZİ (GOOGLE MAPS EŞ EŞİT TASARIM)
 # ------------------------------------------
 with tab_cafe:
     st.subheader("☕ Kampüs Kafeleri Canlı & Saatlik Yoğunluk Analizi")
-    st.caption("Google Maps popüler saatler algoritması ile kampüs kafelerinin saatlik doluluk grafiği.")
+    st.caption("Google Maps 'Popüler Saatler' algoritması ve arayüzü ile kampüs kafelerinin doluluk durumları.")
 
-    selected_cafe = st.selectbox("İncelemek İstediğiniz Kafeyi Seçin", list(CAFE_HOURLY_DATA.keys()))
-    
+    col_select1, col_select2 = st.columns([2, 1])
+    with col_select1:
+        selected_cafe = st.selectbox("İncelemek İstediğiniz Kafeyi Seçin", list(CAFE_HOURLY_DATA.keys()))
+    with col_select2:
+        selected_day = st.selectbox("Gün Seçin", ["Salı günleri", "Pazartesi günleri", "Çarşamba günleri", "Perşembe günleri", "Cuma günleri", "Cumartesi günleri", "Pazar günleri"])
+
     density_val, status_str, status_desc = get_current_cafe_density(selected_cafe)
 
     c_col1, c_col2 = st.columns([1, 2])
     with c_col1:
-        st.markdown(f"### {selected_cafe}")
-        st.metric(label="Şu Anki Tahmini Doluluk", value=f"%{density_val}")
-        st.markdown(f"**Durum:** {status_str}")
-        st.caption(status_desc)
+        st.markdown(f"""
+        <div class="gmaps-card">
+            <h3 style="margin:0; color:#202124;">{selected_cafe}</h3>
+            <h1 style="margin:10px 0 0 0; color:#1d5d63; font-size:42px;">%{density_val}</h1>
+            <p style="margin:0; font-weight:600;">Doluluk Oranı</p>
+            <hr style="margin:12px 0;">
+            <p style="margin:0; font-size:15px;"><strong>Durum:</strong> {status_str}</p>
+            <p style="margin:5px 0 0 0; color:#5f6368; font-size:13px;">{status_desc}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with c_col2:
-        df_cafe = pd.DataFrame({
-            "Saat": HOURS_LABELS,
-            "Yoğunluk (%)": CAFE_HOURLY_DATA[selected_cafe]
-        })
-        fig = px.bar(
-            df_cafe, x="Saat", y="Yoğunluk (%)", 
-            title=f"{selected_cafe} - Saatlik Popüler Sıklık Grafiği",
-            color="Yoğunluk (%)",
-            color_continuous_scale="Blues"
-        )
-        fig.update_layout(height=280, margin=dict(l=10, r=10, t=40, b=10))
-        st.plotly_chart(fig, use_container_width=True)
+        st.markdown('<div class="gmaps-card">', unsafe_allow_html=True)
+        fig_gmaps = render_google_maps_populer_saatler(selected_cafe, selected_day)
+        st.plotly_chart(fig_gmaps, use_container_width=True, config={'displayModeBar': False})
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------------------------------
 # SEKME 4: ULAŞIM & SAKUS REHBERİ
@@ -458,4 +545,4 @@ with tab_calc:
         elif req_final > 100:
             st.error(f"❌ Hedeflenen {h_not} ortalama için gereken final notu **{req_final:.1f}** (100 üstü). Bütünleme sınavına hazırlanmanız gerekebilir.")
         else:
-            st.success(f"🎯 **Hedeflenen {h_not} ortalama için Finalde Almanız Gereken Not: {req_final:.1f}**")
+            st.success(f"🎯 **Hedeflenen {h_not} ortalama için Finalde Almanız Gereken Not: {req_final:.1f}**")git add app.py
