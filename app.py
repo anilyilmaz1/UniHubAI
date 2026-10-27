@@ -545,4 +545,4 @@ with tab_calc:
         elif req_final > 100:
             st.error(f"❌ Hedeflenen {h_not} ortalama için gereken final notu **{req_final:.1f}** (100 üstü). Bütünleme sınavına hazırlanmanız gerekebilir.")
         else:
-            st.success(f"🎯 **Hedeflenen {h_not} ortalama için Finalde Almanız Gereken Not: {req_final:.1f}**")git add app.py
+            st.success(f"🎯 **Hedeflenen {h_not} ortalama için Finalde Almanız Gereken Not: {req_final:.1f}**")
