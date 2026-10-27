@@ -285,6 +285,17 @@ BUS_LINES_DATA = {
     }
 }
 
+# SAÜ Harf Notları Standart Alt Sınır Tablosu
+SAU_LETTER_GRADES = {
+    "AA (90 - Pekiyi)": 90.0,
+    "BA (85 - İyi-Pekiyi)": 85.0,
+    "BB (75 - İyi)": 75.0,
+    "CB (65 - Orta-İyi)": 65.0,
+    "CC (50 - Standart Geçer)": 50.0,
+    "DC (45 - Şartlı Geçer)": 45.0,
+    "DD (40 - Şartlı Geçer)": 40.0
+}
+
 # ==========================================
 # 6. CHATBOT İÇİN YEMEK BİLGİSİ
 # ==========================================
@@ -448,7 +459,7 @@ tab_chat, tab_food, tab_cafe, tab_bus, tab_calc = st.tabs([
     "🍱 SABİS Canlı Yemek Menüsü", 
     "☕ Kafe Yoğunluk Analizi", 
     "🚌 Ulaşım & SAKUS Canlı Takip", 
-    "🧮 Not & Baraj Hesapla"
+    "🧮 Gelişmiş Not & Baraj Hesapla"
 ])
 
 # ------------------------------------------
@@ -604,14 +615,12 @@ with tab_bus:
         "💳 Kart, Ücretler & Kampüs Taksi"
     ])
 
-    # ALT SEKME 1: CANLI SAKUS HARİTASI (IFRAME)
     with bus_sub_tab1:
         st.info("💡 **SAKUS Canlı Harita:** Aşağıdaki ekrandan kampüse gelen otobüslerin haritadaki canlı konumlarını anlık izleyebilirsiniz.")
         st.components.v1.iframe("https://sakus.sakarya.bel.tr", height=650, scrolling=True)
         st.markdown("---")
         st.link_button("🌐 SAKUS Haritasını Tam Ekran Aç", "https://sakus.sakarya.bel.tr", use_container_width=True)
 
-    # ALT SEKME 2: İNTERAKTİF HAT DETAYLARI
     with bus_sub_tab2:
         selected_bus_line = st.selectbox("İncelemek İstediğiniz Otobüs Hattını Seçin:", list(BUS_LINES_DATA.keys()))
         b_info = BUS_LINES_DATA[selected_bus_line]
@@ -650,7 +659,6 @@ with tab_bus:
             })
         st.table(pd.DataFrame(bus_rows))
 
-    # ALT SEKME 3: KART, ÜCRETLER & TAKSİ
     with bus_sub_tab3:
         uc1, uc2 = st.columns(2)
         with uc1:
@@ -683,30 +691,105 @@ with tab_bus:
             """, unsafe_allow_html=True)
 
 # ------------------------------------------
-# SEKME 5: NOT & BARAJ HESAPLAYICI
+# SEKME 5: GELİŞMİŞ NOT, PROJE & HARF NOTU HESAPLAYICI
 # ------------------------------------------
 with tab_calc:
-    st.subheader("🧮 SAÜ 'Kaç Alırsam Geçerim?' Not Hesaplayıcı")
-    st.warning("⚠️ **SAÜ Önemli Kuralı:** Yıl içi not ortalamanız kaç olursa olsun, dersten geçebilmek için **Final sınavından EN AZ 50 puan** alma şartı vardır.")
+    st.subheader("🧮 SAÜ Gelişmiş Not, Proje & Harf Notu Hesaplayıcı")
+    st.warning("⚠️ **SAÜ Final Barajı Kuralı:** Yıl içi not ortalamanız kaç olursa olsun, dersten geçebilmek için **Final sınavından EN AZ 50 puan** alma şartı vardır.")
 
-    nc1, nc2 = st.columns(2)
-    with nc1:
-        v_not = st.number_input("Vize Notunuz", min_value=0.0, max_value=100.0, value=50.0, step=1.0)
-        v_oran = st.slider("Vize Etki Oranı (%)", min_value=10, max_value=90, value=40, step=5)
-    with nc2:
-        h_not = st.number_input("Hedef Ortalama (CC Standart Geçme = 50)", min_value=30.0, max_value=100.0, value=50.0, step=1.0)
-        f_oran = 100 - v_oran
-        st.info(f"Hesaplanan Final Etki Oranı: **%{f_oran}**")
+    # 1. HEDEF HARF NOTU SEÇİMİ
+    st.markdown("### 1️⃣ Hedef Harf Notunu Seçin")
+    selected_letter = st.selectbox(
+        "Hedeflediğiniz Harf Notunu Seçin",
+        list(SAU_LETTER_GRADES.keys()),
+        index=0
+    )
+    target_score = SAU_LETTER_GRADES[selected_letter]
+    st.info(f"🎯 **Seçilen Harf Notu Hedef Puanı:** **{target_score}** / 100")
 
-    if st.button("🧮 Gereken Final Notunu Hesapla", use_container_width=True):
-        v_katki = v_not * (v_oran / 100.0)
-        req_final = (h_not - v_katki) / (f_oran / 100.0)
+    st.markdown("---")
+    st.markdown("### 2️⃣ Yıl İçi Değerlendirme Bileşenleri (Vize, Proje, Lab vb.)")
 
-        st.markdown("---")
-        if req_final < 50:
-            st.warning(f"Matematiksel olarak **{req_final:.1f}** yeterli görünse de SAÜ Final Baraj kuralı nedeniyle finalden **EN AZ 50** almalısınız!")
-            st.success("🎯 **Finalde Almanız Gereken Asgari Not: 50.0**")
-        elif req_final > 100:
-            st.error(f"❌ Hedeflenen {h_not} ortalama için gereken final notu **{req_final:.1f}** (100 üstü). Bütünleme sınavına hazırlanmanız gerekebilir.")
-        else:
-            st.success(f"🎯 **Hedeflenen {h_not} ortalama için Finalde Almanız Gereken Not: {req_final:.1f}**")
+    # 2. BİLEŞEN GİRDİLERİ
+    c_vize, c_proje, c_lab = st.columns(3)
+    
+    with c_vize:
+        st.markdown("##### 📝 Vize Sınavı")
+        vize_not = st.number_input("Vize Notunuz", min_value=0.0, max_value=100.0, value=60.0, step=1.0)
+        vize_oran = st.slider("Vize Etki Oranı (%)", min_value=10, max_value=80, value=40, step=5)
+
+    with c_proje:
+        st.markdown("##### 💻 Proje / Ödev (Opsiyonel)")
+        proje_not = st.number_input("Proje / Ödev Notunuz", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
+        proje_oran = st.slider("Proje/Ödev Etki Oranı (%)", min_value=0, max_value=50, value=0, step=5)
+
+    with c_lab:
+        st.markdown("##### 🧪 Lab / Quiz (Opsiyonel)")
+        lab_not = st.number_input("Lab / Quiz Notunuz", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
+        lab_oran = st.slider("Lab/Quiz Etki Oranı (%)", min_value=0, max_value=50, value=0, step=5)
+
+    # Toplam Yıl İçi Oranı ve Otomatik Final Oranı Hesaplama
+    total_yilici_oran = vize_oran + proje_oran + lab_oran
+    final_oran = 100 - total_yilici_oran
+
+    st.markdown("---")
+    
+    if total_yilici_oran >= 100:
+        st.error(f"❌ Yıl içi değerlendirme oranlarının toplamı **%{total_yilici_oran}** oldu! Final sınavına oran kalmadı (Toplam %100'den küçük olmalıdır). Lütfen oranları ayarlayın.")
+    else:
+        st.success(f"📊 **Yıl İçi Toplam Etki Oranı:** %{total_yilici_oran} &nbsp;|&nbsp; 🎯 **Otomatik Hesaplanan Final Etki Oranı:** **%{final_oran}**")
+
+        if st.button("🧮 Gereken Final Sınavı Notunu Hesapla", use_container_width=True):
+            # Yıl içi kazanılan toplam puanlar
+            vize_puan = vize_not * (vize_oran / 100.0)
+            proje_puan = proje_not * (proje_oran / 100.0)
+            lab_puan = lab_not * (lab_oran / 100.0)
+            
+            kazanilan_puan = vize_puan + proje_puan + lab_puan
+            gereken_puan = target_score - kazanilan_puan
+            req_final = gereken_puan / (final_oran / 100.0)
+
+            st.markdown("---")
+            st.markdown("### 📈 Hesaplama Sonuç Raporu")
+            
+            # Detaylı Puan Özet Paneli
+            r_col1, r_col2 = st.columns(2)
+            with r_col1:
+                st.markdown(f"""
+                <div class="info-card">
+                    <h4>📥 Cebinizdeki Puanlar (Şu Ana Kadar)</h4>
+                    <p>• Vize Katkısı: <b>{vize_puan:.2f} puan</b> (%{vize_oran})</p>
+                    <p>• Proje/Ödev Katkısı: <b>{proje_puan:.2f} puan</b> (%{proje_oran})</p>
+                    <p>• Lab/Quiz Katkısı: <b>{lab_puan:.2f} puan</b> (%{lab_oran})</p>
+                    <hr style="margin:8px 0;">
+                    <p style="font-size:16px;"><b>Toplam Yıl İçi Birikimi:</b> <span style="color:#002855; font-weight:700;">{kazanilan_puan:.2f} / {total_yilici_oran} puan</span></p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with r_col2:
+                # Durum Değerlendirme Kartı
+                if req_final < 50:
+                    st.markdown(f"""
+                    <div class="info-card" style="border-left-color:#eab308;">
+                        <h4 style="color:#854d0e;">⚠️ SAÜ Final Barajı Kuralı Devrede</h4>
+                        <p>Matematiksel hesaplamaya göre <b>{selected_letter.split(' ')[0]}</b> almak için <b>{req_final:.1f}</b> almanız yeterli görünse de;</p>
+                        <p><b>SAÜ kuralı gereği Final sınavından EN AZ 50.0 almanız şarttır!</b></p>
+                        <h3 style="color:#166534; margin:10px 0 0 0;">🎯 Finalde Almanız Gereken Not: 50.0</h3>
+                    </div>
+                    """, unsafe_allow_html=True)
+                elif req_final > 100:
+                    st.markdown(f"""
+                    <div class="info-card" style="border-left-color:#ef4444;">
+                        <h4 style="color:#991b1b;">❌ Hedef Harf Notu Yüksek Kaldı</h4>
+                        <p>Hedeflenen <b>{selected_letter}</b> ({target_score} puan) için Final sınavından <b>{req_final:.1f}</b> almanız gerekiyor (100 üzeri puan almak imkansızdır).</p>
+                        <p>💡 Lütfen hedefinizi bir alt harf notuna (örn. BA veya BB) güncelleyiniz.</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div class="info-card" style="border-left-color:#16a34a;">
+                        <h4 style="color:#166534;">🎉 Hedef Ulaşılabilir!</h4>
+                        <p>Hedeflenen <b>{selected_letter}</b> harf notunu garantilemek için Final sınavından almanız gereken minimum not:</p>
+                        <h2 style="color:#002855; margin:10px 0 0 0;">🎯 Final Notu: {req_final:.1f}</h2>
+                    </div>
+                    """, unsafe_allow_html=True)
