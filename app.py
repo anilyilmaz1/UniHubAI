@@ -106,6 +106,14 @@ st.markdown("""
         border-radius: 10px;
         margin-bottom: 18px;
     }
+    .bus-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+        margin-bottom: 12px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -154,7 +162,6 @@ CAFE_DATABASE = {
 HOURS_LABELS = [f"{h:02d}" for h in range(6, 24)]
 
 def get_hourly_profile_by_day(cafe_name: str, day_name: str) -> list:
-    """Güne ve kafeye göre saatlik yoğunluk verisini döner"""
     data = CAFE_DATABASE.get(cafe_name, {})
     if "Cuma" in day_name:
         return data.get("friday", [30]*18)
@@ -164,7 +171,6 @@ def get_hourly_profile_by_day(cafe_name: str, day_name: str) -> list:
         return data.get("weekday", [30]*18)
 
 def get_cafe_density_info(cafe_name: str, day_name: str, target_hour: int) -> tuple:
-    """Seçilen saat ve güne göre yoğunluk durumunu hesaplar"""
     profile = get_hourly_profile_by_day(cafe_name, day_name)
     
     if target_hour < 6 or target_hour >= 24:
@@ -188,7 +194,7 @@ def render_google_maps_populer_saatler(cafe_name: str, day_name: str, highlight_
     bar_colors = []
     for h in range(6, 24):
         if h == highlight_hour:
-            bar_colors.append('#1d5d63') # Seçili / Anlık saat vurgu rengi
+            bar_colors.append('#1d5d63')
         else:
             bar_colors.append('#528f95')
 
@@ -232,10 +238,57 @@ def render_google_maps_populer_saatler(cafe_name: str, day_name: str, highlight_
     return fig
 
 # ==========================================
-# 5. CHATBOT İÇİN ESNEN YEMEK BİLGİSİ
+# 5. ULAŞIM & OTOBÜS DETAYLI VERİTABANI
+# ==========================================
+BUS_LINES_DATA = {
+    "4 Nolu Hat (Kampüs - Gar - Çark Cad.)": {
+        "freq": "3 - 5 Dakikada Bir",
+        "first_bus": "06:15",
+        "last_bus": "23:45",
+        "route": "Esentepe Kampüsü ➔ Kampüs Yolu ➔ Mavi Durak ➔ Serdivan ➔ Çark Caddesi ➔ Sakarya Garı",
+        "desc": "Kampüsten merkeze ve gar bölgesine ulaşım için en sık çalışan ana hattır."
+    },
+    "15 Nolu Hat (Kampüs - Serdivan AVM - Ring)": {
+        "freq": "7 - 10 Dakikada Bir",
+        "first_bus": "06:30",
+        "last_bus": "23:30",
+        "route": "Esentepe Kampüsü ➔ Üniversite Cad. ➔ Serdivan AVM ➔ Cadde54 ➔ Ağız ve Diş Sağlığı ➔ Kampüs Ring",
+        "desc": "Alışveriş merkezleri (Serdivan AVM / Cadde54) ve kafeler bölgesine direkt ulaşım sağlar."
+    },
+    "24 Nolu Hat (Kampüs - Kent Park - Ofis Park)": {
+        "freq": "10 - 12 Dakikada Bir",
+        "first_bus": "06:45",
+        "last_bus": "23:15",
+        "route": "Esentepe Kampüsü ➔ Mavi Durak ➔ Çark Cad. ➔ Ofis Park ➔ Kent Park ➔ Donatım",
+        "desc": "Kent Park ve Ofis Park istikametine gidecek öğrenciler için ideal hattır."
+    },
+    "54 Nolu Hat (Kampüs - Otogar)": {
+        "freq": "15 - 20 Dakikada Bir",
+        "first_bus": "06:00",
+        "last_bus": "00:15",
+        "route": "Esentepe Kampüsü ➔ Serdivan ➔ D-100 Karayolu ➔ Sakarya Şehirlerarası Otobüs Terminali",
+        "desc": "Şehir dışına seyahat edecek öğrencilerin otogara aktarmasız gitmesini sağlar."
+    },
+    "3 Nolu Hat (Kampüs - Kampüs Ring & Çevre)": {
+        "freq": "15 Dakikada Bir",
+        "first_bus": "07:00",
+        "last_bus": "22:00",
+        "route": "Merkez Kütüphane ➔ Mühendislik Fak. ➔ Fen-Edebiyat ➔ İlahiyat ➔ Helikopter Pist Yolu",
+        "desc": "Kampüs içi fakülteler arası ring ve çevre yerleşke hattıdır."
+    },
+    "21B Nolu Hat (Kampüs - Hendek / Dış İlçeler)": {
+        "freq": "20 - 30 Dakikada Bir",
+        "first_bus": "06:30",
+        "last_bus": "21:30",
+        "route": "Kampüs ➔ Otoban Bağlantı Yolu ➔ Hendek / Erenler İstikameti",
+        "desc": "Kampüsten dış ilçelere geçiş yapacak öğrenciler için ekspres hattır."
+    }
+}
+
+# ==========================================
+# 6. CHATBOT İÇİN YEMEK BİLGİSİ
 # ==========================================
 def fetch_today_menu_summary():
-    """AI Chatbot bağlamı için bugünün menü özetini güvenli çeker"""
     today_dt = date.today()
     if today_dt.weekday() in (5, 6):
         return "Hafta sonu nedeniyle yemekhanede yemek servisi yapılmamaktadır."
@@ -261,7 +314,7 @@ def fetch_today_menu_summary():
     return "SABİS canlı menüsü için Yemekhane sekmesini ziyaret edebilirsiniz."
 
 # ==========================================
-# 6. AKADEMİK BİLGİ TABANI (KNOWLEDGE BASE)
+# 7. AKADEMİK BİLGİ TABANI (KNOWLEDGE BASE)
 # ==========================================
 SAU_AKADEMIK_BILGI = """
 [SAÜ AKADEMİK TAKVİM BİLGİLERİ]
@@ -293,7 +346,7 @@ SAU_AKADEMIK_BILGI = """
 """
 
 # ==========================================
-# 7. GROQ AI CEVAP ENTEGRASYONU
+# 8. GROQ AI CEVAP ENTEGRASYONU
 # ==========================================
 def generate_academic_response(messages_history, student_faculty: str, student_dept: str) -> str:
     if not client:
@@ -343,7 +396,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
             return f"Yanıt üretilirken bir hata oluştu: {str(e)}"
 
 # ==========================================
-# 8. SESSION STATE İLKELENDİRME
+# 9. SESSION STATE İLKELENDİRME
 # ==========================================
 if "messages" not in st.session_state:
     st.session_state.messages = [
@@ -351,7 +404,7 @@ if "messages" not in st.session_state:
     ]
 
 # ==========================================
-# 9. SOL MENÜ (ÖĞRENCİ PROFİLİ & QUICK LINKS)
+# 10. SOL MENÜ (ÖĞRENCİ PROFİLİ & QUICK LINKS)
 # ==========================================
 with st.sidebar:
     st.title("🎓 UniHub Academic AI")
@@ -385,7 +438,7 @@ with st.sidebar:
         st.rerun()
 
 # ==========================================
-# 10. ANA EKRAN SEKMELİ YAPI
+# 11. ANA EKRAN SEKMELİ YAPI
 # ==========================================
 st.title("💬 SAÜ Akıllı Kampüs & Akademik Asistanı")
 st.caption(f"Aktif Öğrenci Bağlamı: **{faculty}** {f'({department})' if department else ''}")
@@ -394,7 +447,7 @@ tab_chat, tab_food, tab_cafe, tab_bus, tab_calc = st.tabs([
     "💬 Akıllı AI Asistan", 
     "🍱 SABİS Canlı Yemek Menüsü", 
     "☕ Kafe Yoğunluk Analizi", 
-    "🚌 Ulaşım & SAKUS", 
+    "🚌 Ulaşım & SAKUS Canlı Takip", 
     "🧮 Not & Baraj Hesapla"
 ])
 
@@ -482,7 +535,6 @@ with tab_cafe:
     st.subheader("☕ Kampüs Kafeleri Canlı & Saatlik Yoğunluk Analizi")
     st.caption("Google Maps 'Popüler Saatler' algoritması, güne özel doluluk eğrileri ve kampüs mekân önerileri.")
 
-    # 1. Filtreleme ve Kontrol Paneli
     col_filter1, col_filter2, col_filter3 = st.columns([2, 1.5, 1.5])
     with col_filter1:
         selected_cafe = st.selectbox("İncelemek İstediğiniz Kafeyi Seçin", list(CAFE_DATABASE.keys()))
@@ -491,14 +543,12 @@ with tab_cafe:
     with col_filter3:
         time_mode = st.radio("Saat Modu:", ["🔴 Anlık Saat", "🎛️ Özel Saat Seç"], horizontal=True)
 
-    # Saat Tespiti
     current_live_hour = datetime.now().hour
     if "Özel Saat" in time_mode:
         selected_hour = st.slider("İncelemek İstediğiniz Saati Seçin (06:00 - 23:00)", min_value=6, max_value=23, value=14, step=1)
     else:
         selected_hour = current_live_hour
 
-    # 2. Akıllı Öneri Kartı ("Şu An Nereye Gitmeliyim?")
     best_cafe = None
     lowest_density = 999
     for c_name in CAFE_DATABASE.keys():
@@ -516,7 +566,6 @@ with tab_cafe:
         </div>
         """, unsafe_allow_html=True)
 
-    # 3. Seçili Kafe Analizi ve Detay Kartı
     density_val, status_str, status_desc = get_cafe_density_info(selected_cafe, selected_day, selected_hour)
     cafe_tags = CAFE_DATABASE.get(selected_cafe, {}).get("tags", [])
 
@@ -526,7 +575,7 @@ with tab_cafe:
         st.markdown(f"""
         <div class="gmaps-card">
             <h3 style="margin:0; color:#202124;">{selected_cafe}</h3>
-            <p style="margin:2px 0 10px 0; color:#5f6368; font-size:13px;">Incelenen Saat: <b>{selected_hour:02d}:00</b> ({selected_day})</p>
+            <p style="margin:2px 0 10px 0; color:#5f6368; font-size:13px;">İncelenen Saat: <b>{selected_hour:02d}:00</b> ({selected_day})</p>
             <h1 style="margin:0; color:#1d5d63; font-size:44px;">%{density_val}</h1>
             <p style="margin:0; font-weight:600; color:#374151;">Doluluk Oranı</p>
             <hr style="margin:12px 0;">
@@ -543,42 +592,95 @@ with tab_cafe:
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------------------------------
-# SEKME 4: ULAŞIM & SAKUS REHBERİ
+# SEKME 4: Gelişmiş ULAŞIM & SAKUS CANLI TAKİP
 # ------------------------------------------
 with tab_bus:
-    st.subheader("🚌 Kampüs Otobüs Hatları & SAKUS Canlı Takip")
-    
-    b1, b2 = st.columns(2)
-    with b1:
-        st.markdown("""
-        <div class="info-card">
-            <h4>🚌 4 Nolu Hat (Kampüs - Gar - Çark Cad.)</h4>
-            <p><strong>Sıklık:</strong> 3 - 5 Dakikada Bir</p>
-            <p><strong>Güzergah:</strong> Esentepe Kampüsü ➔ Mavi Durak ➔ Çark Caddesi ➔ Sakarya Garı</p>
-        </div>
-        <div class="info-card">
-            <h4>🚌 15 Nolu Hat (Kampüs - Serdivan AVM)</h4>
-            <p><strong>Sıklık:</strong> 7 - 10 Dakikada Bir</p>
-            <p><strong>Güzergah:</strong> Kampüs ➔ Serdivan AVM ➔ Cadde54 ➔ Kampüs Ring</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with b2:
-        st.markdown("""
-        <div class="info-card">
-            <h4>🚌 24 Nolu Hat (Kampüs - Kent Park)</h4>
-            <p><strong>Sıklık:</strong> 10 Dakikada Bir</p>
-            <p><strong>Güzergah:</strong> Kampüs ➔ Mavi Durak ➔ Ofis Park ➔ Kent Park</p>
-        </div>
-        <div class="info-card">
-            <h4>🚌 54 Nolu Hat (Kampüs - Otogar)</h4>
-            <p><strong>Sıklık:</strong> 15 Dakikada Bir</p>
-            <p><strong>Güzergah:</strong> Kampüs ➔ Şehirlerarası Otobüs Terminali</p>
-        </div>
-        """, unsafe_allow_html=True)
+    st.subheader("🚌 SAÜ Ulaşım Rehberi & SAKUS Canlı Otobüs Takip")
+    st.caption("Kampüs otobüs hatları, ilk/son sefer saatleri ve Sakarya Büyükşehir SAKUS canlı konum haritası.")
 
-    st.markdown("---")
-    st.link_button("🌐 SAKUS Canlı Otobüs Konumlarını Haritada Gör", "https://sakus.sakarya.bel.tr", use_container_width=True)
+    bus_sub_tab1, bus_sub_tab2, bus_sub_tab3 = st.tabs([
+        "🌐 SAKUS Canlı Otobüs Haritası", 
+        "🚌 Hat Detayları & Sefer Saatleri", 
+        "💳 Kart, Ücretler & Kampüs Taksi"
+    ])
+
+    # ALT SEKME 1: CANLI SAKUS HARİTASI (IFRAME)
+    with bus_sub_tab1:
+        st.info("💡 **SAKUS Canlı Harita:** Aşağıdaki ekrandan kampüse gelen otobüslerin haritadaki canlı konumlarını anlık izleyebilirsiniz.")
+        st.components.v1.iframe("https://sakus.sakarya.bel.tr", height=650, scrolling=True)
+        st.markdown("---")
+        st.link_button("🌐 SAKUS Haritasını Tam Ekran Aç", "https://sakus.sakarya.bel.tr", use_container_width=True)
+
+    # ALT SEKME 2: İNTERAKTİF HAT DETAYLARI
+    with bus_sub_tab2:
+        selected_bus_line = st.selectbox("İncelemek İstediğiniz Otobüs Hattını Seçin:", list(BUS_LINES_DATA.keys()))
+        b_info = BUS_LINES_DATA[selected_bus_line]
+
+        bc1, bc2 = st.columns([1.2, 2])
+        with bc1:
+            st.markdown(f"""
+            <div class="bus-card">
+                <h3 style="margin:0; color:#002855;">{selected_bus_line.split('(')[0]}</h3>
+                <p style="color:#64748b; margin-bottom:12px;">{b_info['desc']}</p>
+                <hr style="margin:8px 0;">
+                <p style="margin:6px 0;"><b>⏱️ Çalışma Sıklığı:</b> <span style="color:#16a34a; font-weight:600;">{b_info['freq']}</span></p>
+                <p style="margin:6px 0;"><b>🌅 İlk Sefer (Kampüs):</b> <b>{b_info['first_bus']}</b></p>
+                <p style="margin:6px 0;"><b>🌙 Son Sefer (Kampüs):</b> <b>{b_info['last_bus']}</b></p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with bc2:
+            st.markdown(f"""
+            <div class="bus-card">
+                <h4 style="margin:0 0 10px 0; color:#002855;">📍 Güzergah ve Durak Hattı</h4>
+                <p style="font-size:15px; line-height:1.6; color:#1e293b;">{b_info['route']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("---")
+        st.markdown("##### 📌 Diğer Kampüs Hatları Özet Tablosu")
+        bus_rows = []
+        for name, data in BUS_LINES_DATA.items():
+            bus_rows.append({
+                "Hat Adı": name.split('(')[0].strip(),
+                "Kapsam": name.split('(')[1].replace(')', '') if '(' in name else "",
+                "Sıklık": data["freq"],
+                "İlk Sefer": data["first_bus"],
+                "Son Sefer": data["last_bus"]
+            })
+        st.table(pd.DataFrame(bus_rows))
+
+    # ALT SEKME 3: KART, ÜCRETLER & TAKSİ
+    with bus_sub_tab3:
+        uc1, uc2 = st.columns(2)
+        with uc1:
+            st.markdown("""
+            <div class="info-card">
+                <h4>💳 Kart54 & Ulaşım Ücretleri</h4>
+                <p>• <b>Öğrenci Kart54 Biniş Ücreti:</b> İndirimli öğrenci tarifesi uygulanır.</p>
+                <p>• <b>Temassız Kredi / Banka Kartı:</b> Kart54 olmadan tüm temassız kartlarla otobüslere binebilirsiniz.</p>
+                <p>• <b>Kart Dolum Noktaları:</b> Kampüs Helikopter Pisti durağında ve Mavi Durak'ta Otomatik Kiosk bulunmaktadır.</p>
+            </div>
+            <div class="info-card">
+                <h4>🚌 Kampüs İçi Ring Hizmeti</h4>
+                <p>• Kampüs içi fakülteler arası ring otobüsleri hafta içi ders saatlerinde <b>10 dakikada bir</b> hareket eder.</p>
+                <p>• Kütüphane ➔ Mühendislik ➔ İlahiyat ➔ Rektörlük hattını takip eder.</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with uc2:
+            st.markdown("""
+            <div class="info-card">
+                <h4>🚕 SAÜ Kampüs Taksi & Gece Ulaşımı</h4>
+                <p>Gece otobüs seferleri bittiğinde veya acil durumlarda Kampüs Taksi durağı 24 saat hizmet vermektedir.</p>
+                <p><b>📍 Konum:</b> SAÜ Helikopter Pist Girişi / Kafe Karşısı</p>
+                <p><b>📞 Taksi Durağı İletişim:</b> 0 (264) 211 11 00 (Örnek Durak Hattı)</p>
+            </div>
+            <div class="info-card">
+                <h4>🚐 Serdivan Mavi Durak Minibüsleri</h4>
+                <p>• Mavi Durak - Kampüs arası çalışan mavi minibüsler nakit ödeme ile yolcu almaktadır.</p>
+            </div>
+            """, unsafe_allow_html=True)
 
 # ------------------------------------------
 # SEKME 5: NOT & BARAJ HESAPLAYICI
