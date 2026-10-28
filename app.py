@@ -476,12 +476,12 @@ if "messages" not in st.session_state:
 # ==========================================
 st.markdown("""
 <style>
-    /* Sidebar Arka Planı: Açık Lacivert / Soft Navy Tonları */
+    /* Sidebar Arka Planı: Temiz Açık Slate / Lacivert Tonu */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #eef2ff 0%, #e2e8f0 100%) !important;
+        background-color: #f1f5f9 !important;
     }
     
-    /* İç Boşlukları Azaltarak Aşağı Kaydırmayı (Scroll) Engelleme */
+    /* İç Boşlukları Sıkılaştırıp Ekran Kaymasını Engelleme */
     [data-testid="stSidebar"] > div:first-child {
         padding-top: 1rem !important;
         padding-bottom: 0.5rem !important;
@@ -489,31 +489,48 @@ st.markdown("""
         padding-right: 0.8rem !important;
     }
     
-    /* Sidebar Başlıkları Rengi */
-    [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
-        color: #1e3a8a !important;
-        font-weight: 700 !important;
-        margin-top: 0px !important;
+    /* Tüm Yazı Renklerini Koyu Laciverte Zorlama */
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] small {
+        color: #0f172a !important;
+        font-weight: 600 !important;
     }
 
-    /* Çizgileri İncelten ve Yakınlaştıran Stil */
+    /* Form Başlıkları ve Etiketleri (Fakülteniz, Bölümünüz) */
+    [data-testid="stSidebar"] label p {
+        color: #1e3a8a !important;
+        font-weight: 700 !important;
+        font-size: 13.5px !important;
+    }
+
+    /* Ana Başlıklar */
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3 {
+        color: #1e3a8a !important;
+        font-weight: 800 !important;
+    }
+
+    /* Çizgiler */
     [data-testid="stSidebar"] hr {
         margin: 0.5rem 0 !important;
         border-color: #cbd5e1 !important;
     }
 
-    /* Şık Hızlı Kısayol Kart Stili */
+    /* Hızlı Kısayol Kart Stili */
     .sidebar-link-card {
         display: flex;
         align-items: center;
-        padding: 7px 12px;
+        padding: 8px 12px;
         margin-bottom: 5px;
         background-color: #ffffff;
         color: #1e3a8a !important;
         text-decoration: none !important;
         border-radius: 8px;
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 700;
         border-left: 4px solid #2563eb;
         box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         transition: all 0.2s ease-in-out;
@@ -522,6 +539,30 @@ st.markdown("""
         background-color: #1e3a8a;
         color: #ffffff !important;
         transform: translateX(3px);
+    }
+
+    /* BUTONLAR (Temizle & İndir) - Her zaman net görünür */
+    [data-testid="stSidebar"] button {
+        background-color: #ffffff !important;
+        border: 1px solid #94a3b8 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    [data-testid="stSidebar"] button p, 
+    [data-testid="stSidebar"] button div, 
+    [data-testid="stSidebar"] button span {
+        color: #1e3a8a !important;
+        font-weight: 700 !important;
+    }
+    [data-testid="stSidebar"] button:hover {
+        background-color: #1e3a8a !important;
+        border-color: #1e3a8a !important;
+    }
+    [data-testid="stSidebar"] button:hover p, 
+    [data-testid="stSidebar"] button:hover div, 
+    [data-testid="stSidebar"] button:hover span {
+        color: #ffffff !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -532,8 +573,8 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 🎓 Profil Seçimleri (Değişken İsimleri Düzeltildi)
-    st.markdown("<h3 style='font-size: 14px; margin-bottom: 4px;'>🎓 Profil Bilgileri</h3>", unsafe_allow_html=True)
+    # 🎓 Profil Seçimleri (Değişken Adları Korundu)
+    st.markdown("<h3 style='font-size: 14px; margin-bottom: 4px; color: #1e3a8a;'>🎓 Profil Bilgileri</h3>", unsafe_allow_html=True)
     
     faculty = st.selectbox(
         "Fakülteniz",
@@ -552,7 +593,7 @@ with st.sidebar:
     st.markdown("---")
 
     # 🔗 Hızlı Kısayollar
-    st.markdown("<h3 style='font-size: 14px; margin-bottom: 6px;'>🔗 Hızlı Kısayollar</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 14px; margin-bottom: 6px; color: #1e3a8a;'>🔗 Hızlı Kısayollar</h3>", unsafe_allow_html=True)
     st.markdown("""
     <a href="https://sabis.sakarya.edu.tr" target="_blank" class="sidebar-link-card">🔗 &nbsp; SABİS Öğrenci Sistemi</a>
     <a href="https://yemek.sakarya.edu.tr" target="_blank" class="sidebar-link-card">🍽️ &nbsp; SABİS Yemek Menüsü</a>
@@ -561,7 +602,7 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # 🧹 İşlem Butonları
+    # 🧹 İşlem Butonları (Her Zaman Net ve Okunabilir)
     col_b1, col_b2 = st.columns(2)
     with col_b1:
         if st.button("🧹 Temizle", use_container_width=True):
