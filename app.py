@@ -585,6 +585,15 @@ st.markdown("""
         font-weight: 600 !important;
         text-decoration: underline !important;
     }
+
+    div[data-testid="stChatInput"] {
+    position: sticky !important;
+    bottom: 0px !important;
+    z-index: 999 !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    background-color: var(--background-color) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
