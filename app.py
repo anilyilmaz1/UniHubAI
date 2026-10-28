@@ -13,7 +13,7 @@ import re
 # 1. SAYFA YAPILANDIRMASI
 # ==========================================
 st.set_page_config(
-    page_title="UniHub Academic AI - SAÜ Akıllı Asistan",
+    page_title="SAÜ Akıllı Asistan",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -437,6 +437,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     2. Öğrenciyi Öğrenci İşleri'ne veya duyurulara yönlendirirken KESİNLİKLE doğrudan tıklanabilir Markdown link formatını kullan (asla ters tırnak veya kod bloğu içine alma):
        👉 [{faculty_label} Öğrenci İşleri]({faculty_url})
     3. Not hesaplama sorularında SAÜ'nün FİNALDEN EN AZ 40 ALMA BARAJI kuralını kesinlikle hatırlat!
+    4. SADECE yukarıda verilen bilgilere dayanarak yanıt ver. Verilerde olmayan bir bilgiyi uydurma; bilmiyorsan bunu açıkça söyle ve öğrenciyi Öğrenci İşleri'ne yönlendir.
     """
 
     full_messages = [{"role": "system", "content": system_prompt}] + messages_history
@@ -697,7 +698,7 @@ with tab_chat:
             if st.button("🧮 Vize 45 Aldım Geçer miyim?", use_container_width=True):
                 prompt_to_send = "Vizeden 45 aldım, dersten CC ile geçmek için finalden kaç almam lazım?"
             if st.button("🚌 Otogar Otobüsü Kaçta?", use_container_width=True):
-                prompt_to_send = "Otogara giden 54 nolu otobüsün ilk ve son sefer saatleri nedir?"
+                prompt_to_send = "Otogara giden 26 nolu otobüsün ilk ve son sefer saatleri nedir?"
 
     st.markdown("---")
 

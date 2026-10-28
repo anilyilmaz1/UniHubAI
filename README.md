@@ -14,14 +14,17 @@ license: apache-2.0
 
 > Sakarya Üniversitesi öğrencileri için yapay zekâ destekli, tek noktadan kampüs asistanı.
 
+> Proje ilk olarak *UniHub AI* adıyla başlatılmış, sonrasında *SAÜ Asistan* olarak yeniden adlandırılmıştır. Depo ve Space adresleri ilk ad olan `UniHubAI` ile kalmıştır.
+
 🔗 **Canlı Demo:** [SAÜ Asistan Space](https://huggingface.co/spaces/Anil-yilmaz/UniHubAI)
-💻 **GitHub:** [Anilyilmaz1/SAÜ Asistan](https://github.com/anilyilmaz1/UniHubAI)
+
+💻 **GitHub:** [anilyilmaz1/UniHubAI](https://github.com/anilyilmaz1/UniHubAI)
 
 ---
 
 ## 🎯 Projenin Amacı
 
-Öğrenciler; staj yönergesi, sınav takvimi, yemekhane menüsü, otobüs saatleri gibi bilgilere farklı sitelerden ve belgelerden ulaşmak zorunda kalıyor. UniHub AI bu bilgileri tek bir arayüzde toplayarak öğrencilerin akademik ve günlük kampüs süreçlerinde **zaman kaybetmesini önlemeyi** amaçlar.
+Öğrenciler; staj yönergesi, sınav takvimi, yemekhane menüsü, otobüs saatleri gibi bilgilere farklı sitelerden ve belgelerden ulaşmak zorunda kalıyor. SAÜ Asistan bu bilgileri tek bir arayüzde toplayarak öğrencilerin akademik ve günlük kampüs süreçlerinde **zaman kaybetmesini önlemeyi** amaçlar.
 
 ---
 
@@ -29,14 +32,10 @@ license: apache-2.0
 
 | # | Modül | Ne Yapar? |
 |---|-------|-----------|
-| 1 | **Akademik & Staj Asistanı** | Seçilen fakülte/bölüme özel staj yönergesi, mazeret dilekçesi, sınav takvimi ve yönetmelik rehberliği sunar. Uydurma bilgiyi önlemek için *Zero-Hallucination Prompting* kullanır. |
-
-| 2 | **Canlı Yemekhane** | SABİS'ten anlık menüyü çeker.|
-
-| 3 | **Kafe Yoğunluk Analitiği** | Lumo Coffee, Coffy SAÜ, Adıbahçe ve Taş Kafe için saatlik tahmini doluluğu interaktif grafikle gösterir. |
-
-| 4 | **Not & Baraj Hesaplayıcı** | Vize notu ve hedef ortalamaya göre gereken final notunu hesaplar, "finalden en az 50 alma" şartını otomatik denetler. |
-
+| 1 | **Akademik & Staj Asistanı** | Seçilen fakülte/bölüme özel staj yönergesi, mazeret dilekçesi, sınav takvimi ve yönetmelik rehberliği sunar. Uydurma bilgiyi en aza indirmek için *Zero-Hallucination Prompting* kullanır. |
+| 2 | **Canlı Yemekhane** | SABİS'ten anlık menüyü çeker. |
+| 3 | **Kafe Yoğunluk Analitiği** |  Taş Kafe, Lumo Coffee, Coffy SAÜ, Adıbahçe, Espressolab SAÜ ve Merkez Kütüphane Kafe için saatlik tahmini doluluğu interaktif grafikle gösterir. |
+| 4 | **Not & Baraj Hesaplayıcı** | Vize notu ve hedef ortalamaya göre gereken final notunu hesaplar, "finalden en az 40 alma" şartını otomatik denetler. |
 | 5 | **Ulaşım & SAKUS Rehberi** | 4, 15, 24K, 26, 16K ve 6 numaralı hatların saatlerini, güzergâhlarını ve canlı SAKUS harita takibini sunar. |
 
 ---
@@ -49,7 +48,7 @@ license: apache-2.0
 | **Yapay Zekâ (LLM)** | Groq API üzerinden `llama-3.3-70b-versatile` ve `qwen/qwen3.8-27b` |
 | **Veri Çekme** | `requests`, `BeautifulSoup` (SABİS web scraping) |
 | **Görselleştirme** | Plotly |
-| **Veri İşleme** | pandas, python-dotenv |
+| **Veri İşleme** | pandas, pytz |
 | **Yayınlama** | Hugging Face Spaces |
 
 ---
