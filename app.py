@@ -279,7 +279,7 @@ BUS_LINES_DATA = {
         "route": "Esentepe Kampüsü ➔ Sabahattin Zaim Yurdu ➔ Beşköprü Talebe Yurdu ➔ Araştırma Hastanesi ➔ Orta Garaj",
         "desc": "Orta garajtan ilçelere aktarma yapmak isteyen öğrenciler için ideal hattır."
     },
-    "16K Nolu Hat (Kampüs - )": {
+    "16K Nolu Hat (Kampüs - Adapazarı Yurt )": {
         "freq": "Yaklaşık 2 Saatte Bir",
         "first_bus": "06:45",
         "last_bus": "20:00",
@@ -476,7 +476,9 @@ if "messages" not in st.session_state:
 # ==========================================
 st.markdown("""
 <style>
-    /* 1. Sidebar Koyu Lacivert Arka Planı ve Düzeni */
+    /* ==========================================
+       1. SIDEBAR TASARIMI VE RENKLERİ
+       ========================================== */
     [data-testid="stSidebar"] {
         background-color: #0b192c !important;
     }
@@ -488,7 +490,6 @@ st.markdown("""
         padding-right: 0.8rem !important;
     }
 
-    /* 2. Genel Sidebar Metinleri */
     [data-testid="stSidebar"] p, 
     [data-testid="stSidebar"] span, 
     [data-testid="stSidebar"] label,
@@ -498,13 +499,11 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* 3. İnce Çizgiler */
     [data-testid="stSidebar"] hr {
         margin: 0.5rem 0 !important;
         border-color: rgba(255, 255, 255, 0.15) !important;
     }
 
-    /* 4. Hızlı Kısayol Kart Stili */
     .sidebar-link-card {
         display: flex;
         align-items: center;
@@ -528,7 +527,6 @@ st.markdown("""
         transform: translateX(3px);
     }
 
-    /* 5. TEMİZLE & İNDİR BUTONLARI (Kutu ve İç Yazı Rengi Zorlaması) */
     [data-testid="stSidebar"] button {
         background-color: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
@@ -537,14 +535,12 @@ st.markdown("""
         transition: all 0.2s ease-in-out !important;
     }
     
-    /* Buton İÇİNDEKİ YAZILARI KOYU LACİVERT YAPAR (Görünür Kılar) */
     [data-testid="stSidebar"] button * {
         color: #0b192c !important;
         font-weight: 700 !important;
         opacity: 1 !important;
     }
 
-    /* Hover Efektleri (Üzerine Gelince) */
     [data-testid="stSidebar"] div[data-testid="column"]:nth-child(1) button:hover {
         background-color: #dc2626 !important;
         border-color: #dc2626 !important;
@@ -559,6 +555,35 @@ st.markdown("""
     }
     [data-testid="stSidebar"] div[data-testid="column"]:nth-child(2) button:hover * {
         color: #ffffff !important;
+    }
+
+    /* ==========================================
+       2. SOHBET BALONLARI VE INPUT STİLLERİ (YENİ)
+       ========================================== */
+    [data-testid="stChatInput"] {
+        border-radius: 12px !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+    }
+
+    [data-testid="stChatMessage"]:nth-child(even) {
+        background-color: #f8fafc !important;
+        border-radius: 10px !important;
+        border-left: 4px solid #2563eb !important;
+        margin-bottom: 8px !important;
+    }
+
+    [data-testid="stChatMessage"]:nth-child(odd) {
+        background-color: #ffffff !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        margin-bottom: 8px !important;
+    }
+
+    [data-testid="stChatMessage"] a {
+        color: #2563eb !important;
+        font-weight: 600 !important;
+        text-decoration: underline !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -667,24 +692,26 @@ with tab_chat:
 
     st.markdown("---")
 
-    # Sohbet Geçmişi Listeleme
+    # 1. Sohbet Geçmişi Listeleme (Avatarlar Eklendi)
     for idx, message in enumerate(st.session_state.messages):
-        with st.chat_message(message["role"]):
+        avatar_icon = "🤖" if message["role"] == "assistant" else "🧑‍🎓"
+        with st.chat_message(message["role"], avatar=avatar_icon):
             st.markdown(message["content"])
             if "cafe_chart" in message:
                 fig_chat = render_google_maps_populer_saatler(message["cafe_chart"], "Salı günleri", datetime.now().hour)
                 st.plotly_chart(fig_chat, use_container_width=True, config={'displayModeBar': False}, key=f"chat_hist_chart_{idx}")
 
+    # 2. Mesaj Girişi ve Yanıt Üretme (Avatarlar Eklendi)
     user_query = st.chat_input("Akademik takvim, fakülte staj kuralı, ÇAP, otobüs veya kampüs hakkında sorun...")
     if prompt_to_send:
         user_query = prompt_to_send
 
     if user_query:
         st.session_state.messages.append({"role": "user", "content": user_query})
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar="🧑‍🎓"):
             st.markdown(user_query)
 
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar="🤖"):
             with st.spinner(f"{faculty} bilgi tabanı ve SAÜ mevzuatı taranıyor..."):
                 history_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages if "content" in m]
                 response_text = generate_academic_response(history_for_api, faculty, department)
@@ -710,7 +737,8 @@ with tab_chat:
                     st.plotly_chart(fig_inline, use_container_width=True, config={'displayModeBar': False}, key=chart_key)
                     assistant_msg["cafe_chart"] = matched_cafe
 
-        st.session_state.messages.append(assistant_msg)
+            st.session_state.messages.append(assistant_msg)
+            st.rerun()  # Yeni mesaj girildiğinde buton tıklamasıyla çakışmayı önler
 
 # ------------------------------------------
 # SEKME 2: YEMEKHANE & DIREKT CANLI SABIS SAYFASI
