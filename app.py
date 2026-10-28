@@ -388,6 +388,15 @@ FACULTY_KNOWLEDGE = {
     """
 }
 
+FACULTY_URLS = {
+    "Mühendislik Fakültesi": "https://mf.sakarya.edu.tr",
+    "İşletme Fakültesi": "https://isletme.sakarya.edu.tr",
+    "İlahiyat Fakültesi": "https://ilahiyat.sakarya.edu.tr",
+    "Fen-Edebiyat Fakültesi": "https://fef.sakarya.edu.tr",
+    "Siyasal Bilgiler Fakültesi": "https://sbf.sakarya.edu.tr",
+    "Diğer": "https://ogris.sakarya.edu.tr"
+}
+
 # ==========================================
 # 8. GROQ AI CEVAP ENTEGRASYONU
 # ==========================================
@@ -396,16 +405,18 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
         return "⚠️ GROQ_API_KEY bulunamadı. Lütfen Hugging Face Secrets alanına GROQ_API_KEY ekleyin."
 
     menu_summary = fetch_today_menu_summary()
+    faculty_doc = FACULTY_KNOWLEDGE.get(student_faculty, "Genel SAÜ mevzuatı geçerlidir.")
     
-    # Fakülteye özel dokümanı çek (Eğer listede yoksa varsayılan mesaj ver)
-    faculty_doc = FACULTY_KNOWLEDGE.get(student_faculty, "Bu fakülte için genel SAÜ Lisans Eğitim-Öğretim Yönetmeliği hükümleri geçerlidir.")
+    # 🔗 Seçilen fakültenin resmi linkini al
+    faculty_url = FACULTY_URLS.get(student_faculty, "https://ogris.sakarya.edu.tr")
 
     system_prompt = f"""
-    Sen Sakarya Üniversitesi (SAÜ) resmi Akıllı Kampüs Asistanısın. Öğrencilere kesin, doğru ve pratik bilgi vermek senin görevindir.
+    Sen Sakarya Üniversitesi (SAÜ) resmi Akıllı Kampüs Asistanısın.
     
     [AKTİF ÖĞRENCİ PROFİLİ]
     - Fakülte: {student_faculty if student_faculty else "Genel SAÜ Öğrencisi"}
     - Bölüm: {student_dept if student_dept else "Belirtilmedi"}
+    - Fakülte Web Sitesi: {faculty_url}
 
     [GÜNCEL SİSTEM VERİLERİ]
     🌐 BUGÜNKÜ SABİS YEMEK MENÜSÜ:
@@ -418,11 +429,10 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     {faculty_doc}
 
     [MİSYON VE YANIT KURALLARI]
-    1. Öğrenciye yanıt verirken öncelikle SEÇİLİ FAKÜLTE YÖNERGESİNİ ({student_faculty}) ve GENEL SAÜ MEVZUATINI esas al.
-    2. Eğer öğrenci bölümünü ({student_dept}) belirttiyse, yanıtı ve vereceğin tavsiyeleri/örnekleri **mümkün olduğunca o bölümün meslek alanına özelleştir**.
-    3. Not hesaplama sorularında SAÜ'nün **FİNALDEN EN AZ 40 ALMA BARAJI** kuralını kesinlikle hatırlat!
-    4. Yanıtların nazik, motive edici, düzenli maddeler (**bold** etiketli) ve uygun emojilerle zenginleştirilmiş olsun.
-    5. Dokümanda kesin olarak yer almayan konularda uydurma bilgi verme, öğrenciyi Fakülte Öğrenci İşlerine veya Bölüm Başkanlığına yönlendir.
+    1. Öğrenciye yanıt verirken {student_faculty} yönergesini ve genel SAÜ mevzuatını esas al.
+    2. Öğrenciyi Öğrenci İşleri'ne, duyurulara veya fakülteye yönlendirirken KESİNLİKLE şu Markdown link formatını kullan:
+       👉 `[{student_faculty} Öğrenci İşleri]({faculty_url})` veya `[Fakülte Öğrenci İşleri]({faculty_url})`
+    3. Not hesaplama sorularında SAÜ'nün FİNALDEN EN AZ 40 ALMA BARAJI kuralını kesinlikle hatırlat!
     """
 
     full_messages = [{"role": "system", "content": system_prompt}] + messages_history
