@@ -1,5 +1,5 @@
 ---
-title: UniHub AI
+title: SAÜ Asistan
 emoji: 🎓
 colorFrom: blue
 colorTo: indigo
@@ -10,34 +10,111 @@ short_description: Sakarya Üniversitesi Akıllı Kampüs ve Akademik Asistanı
 license: apache-2.0
 ---
 
-# 🎓 UniHub AI - SAÜ Akıllı Kampüs Asistanı
+# 🎓 SAÜ Akıllı Kampüs Asistanı
 
-UniHub AI, Sakarya Üniversitesi (SAÜ) öğrencilerinin akademik süreçlerde zaman kaybetmesini önlemek, ders ve staj yönetmeliklerinden canlı yemekhane menüsüne ve kafe yoğunluk grafiklerine kadar tüm kampüs ihtiyaçlarını tek bir noktada toplayan yapay zekâ destekli dijital asistandır.
+> Sakarya Üniversitesi öğrencileri için yapay zekâ destekli, tek noktadan kampüs asistanı.
 
----
-
-## 🚀 Canlı Demo & Bağlantılar
-- **Canlı Uygulama (Space):** [UniHub AI Space](https://huggingface.co/spaces/Anil-yilmaz/UniHubAI)
-- **GitHub Deposu:** [Anil-yilmaz/hackathon-starter](https://github.com/Anil-yilmaz/UniHubAI)
+🔗 **Canlı Demo:** [SAÜ Asistan Space](https://huggingface.co/spaces/Anil-yilmaz/UniHubAI)
+💻 **GitHub:** [Anilyilmaz1/SAÜ Asistan](https://github.com/anilyilmaz1/UniHubAI)
 
 ---
 
-## ⚙️ Sistem Mimarisi ve Çalışma Mantığı
+## 🎯 Projenin Amacı
 
-Uygulama, öğrencilerin kampüs içi bilgi erişimini hızlandırmak için **5 entegre modül ve dinamik bağlam (context) yapısı** ile çalışır:
-
-1. **1. Modül (Bölüm Bazlı Akademik & Staj Asistanı):** Öğrencinin seçtiği fakülte ve bölüm bağlamına özel %100 doğru staj yönergesi, mazeret dilekçesi, sınav takvimi ve akademik yönetmelik rehberliği sağlar (Zero-Hallucination Prompting).
-2. **2. Modül (Canlı SABİS Scraping & Besin Değerleri):** `BeautifulSoup` ve `requests` ile SABİS yemekhane sisteminden anlık çekilen menü verisini işler; yemek bazlı kalori ve makro besin öğelerini (protein, karbonhidrat, yağ) hesaplayarak sunar.
-3. **3. Modül (Kafe Yoğunluk Analitiği):** Kampüsteki populer kafelerin (*Lumo Coffee, Coffy SAÜ, Adıbahçe, Taş Kafe*) saatlik tahmini doluluk oranlarını Plotly interaktif sütun grafikleriyle görselleştirir.
-4. **4. Modül (SAÜ Not & Baraj Hesaplayıcı):** Vize notu ve hedef ortalamaya göre gereken final puanını hesaplarken, SAÜ'nün **"Finalden en az 50 alma zorunluluğu"** kuralını otomatik denetler.
-5. **5. Modül (Ulaşım & SAKUS Rehberi):** Kampüs otobüs hatlarının (*4, 15, 24, 54*) kalkış saatlerini, güzergahlarını ve canlı SAKUS harita takibini erişime sunar.
+Öğrenciler; staj yönergesi, sınav takvimi, yemekhane menüsü, otobüs saatleri gibi bilgilere farklı sitelerden ve belgelerden ulaşmak zorunda kalıyor. UniHub AI bu bilgileri tek bir arayüzde toplayarak öğrencilerin akademik ve günlük kampüs süreçlerinde **zaman kaybetmesini önlemeyi** amaçlar.
 
 ---
 
-## 🛠️ Öne Çıkan Teknolojiler & Tasarım Detayları
+## ⚙️ Özellikler (5 Modül)
 
-Proje, yüksek performanslı bir kullanıcı deneyimi için modern araçlarla geliştirilmiştir:
+| # | Modül | Ne Yapar? |
+|---|-------|-----------|
+| 1 | **Akademik & Staj Asistanı** | Seçilen fakülte/bölüme özel staj yönergesi, mazeret dilekçesi, sınav takvimi ve yönetmelik rehberliği sunar. Uydurma bilgiyi önlemek için *Zero-Hallucination Prompting* kullanır. |
 
-- **Arayüz & Kurumsal Kimlik:** Streamlit altyapısı üzerine enjekte edilen özel CSS ile Sakarya Üniversitesi kurumsal lacivert (`#002855`) ve `#f3f7f8` açık gri arka plan renk paleti.
-- **Yapay Zekâ (LLM):** Groq API altyapısı üzerinden yüksek hızlı `llama-3.3-70b-versatile` ve `qwen/qwen3.8-27b` modelleri.
-- **Veri İşleme &
+| 2 | **Canlı Yemekhane** | SABİS'ten anlık menüyü çeker.|
+
+| 3 | **Kafe Yoğunluk Analitiği** | Lumo Coffee, Coffy SAÜ, Adıbahçe ve Taş Kafe için saatlik tahmini doluluğu interaktif grafikle gösterir. |
+
+| 4 | **Not & Baraj Hesaplayıcı** | Vize notu ve hedef ortalamaya göre gereken final notunu hesaplar, "finalden en az 50 alma" şartını otomatik denetler. |
+
+| 5 | **Ulaşım & SAKUS Rehberi** | 4, 15, 24K, 26, 16K ve 6 numaralı hatların saatlerini, güzergâhlarını ve canlı SAKUS harita takibini sunar. |
+
+---
+
+## 🛠️ Kullanılan Teknolojiler
+
+| Alan | Teknoloji |
+|------|-----------|
+| **Arayüz** | Streamlit + özel CSS (SAÜ kurumsal rengi `#002855`, arka plan `#f3f7f8`) |
+| **Yapay Zekâ (LLM)** | Groq API üzerinden `llama-3.3-70b-versatile` ve `qwen/qwen3.8-27b` |
+| **Veri Çekme** | `requests`, `BeautifulSoup` (SABİS web scraping) |
+| **Görselleştirme** | Plotly |
+| **Veri İşleme** | pandas, python-dotenv |
+| **Yayınlama** | Hugging Face Spaces |
+
+---
+
+## 🚀 Nasıl Çalıştırılır?
+
+> 💡 Kurulum yapmadan denemek için [canlı demoyu](https://huggingface.co/spaces/Anil-yilmaz/UniHubAI) kullanabilirsiniz.
+
+**1. Depoyu klonlayın**
+```bash
+git clone https://github.com/anilyilmaz1/UniHubAI.git
+cd UniHubAI
+```
+
+**2. Sanal ortam oluşturun ve bağımlılıkları yükleyin** (Python 3.10+)
+```bash
+python -m venv venv
+
+# Linux / macOS
+source venv/bin/activate
+# Windows (PowerShell)
+venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+```
+
+**3. Groq API anahtarını tanımlayın**
+
+Anahtarı [console.groq.com](https://console.groq.com) adresinden ücretsiz alabilirsiniz.
+```bash
+# Linux / macOS
+export GROQ_API_KEY="anahtariniz"
+
+# Windows (PowerShell)
+$env:GROQ_API_KEY="anahtariniz"
+```
+
+**4. Uygulamayı başlatın**
+```bash
+streamlit run app.py
+```
+Tarayıcıda `http://localhost:8501` adresi açılır.
+
+---
+
+## 📁 Proje Yapısı
+
+```
+UniHubAI/
+├── app.py             # Ana Streamlit uygulaması
+├── requirements.txt   # Bağımlılıklar
+└── README.md
+```
+
+---
+
+## 👥 Ekip
+
+| İsim | Rol |
+|------|-----|
+| **Anıl YILMAZ** | Full-Stack & AI Developer (Kodlama, API & Sistem Mimarisi) |
+| **Senanur ADIGÜZEL** | UI/UX Designer & Presenter (Sidebar Tasarımı & Sunum) |
+
+---
+
+## 📄 Lisans
+
+Bu proje [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) lisansı ile yayınlanmıştır.
