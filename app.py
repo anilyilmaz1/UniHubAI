@@ -406,8 +406,6 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
 
     menu_summary = fetch_today_menu_summary()
     faculty_doc = FACULTY_KNOWLEDGE.get(student_faculty, "Genel SAÜ mevzuatı geçerlidir.")
-    
-    # 🔗 Seçilen fakültenin resmi linkini al
     faculty_url = FACULTY_URLS.get(student_faculty, "https://ogris.sakarya.edu.tr")
 
     system_prompt = f"""
@@ -438,18 +436,22 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     full_messages = [{"role": "system", "content": system_prompt}] + messages_history
 
     try:
+        # Ana Model (Llama 3.3 70B Versatile)
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=full_messages,
-            temperature=0.3
+            temperature=0.3,
+            max_tokens=800  # Token limit hatasını engelleyen parametre
         )
         return completion.choices[0].message.content
     except Exception:
         try:
+            # Hızlı Yedek Model (Llama 3.1 8B Instant)
             completion = client.chat.completions.create(
-                model="qwen/qwen3.8-27b",
+                model="llama-3.1-8b-instant",
                 messages=full_messages,
-                temperature=0.3
+                temperature=0.3,
+                max_tokens=800
             )
             return completion.choices[0].message.content
         except Exception as e:
