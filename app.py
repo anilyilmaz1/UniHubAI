@@ -6,6 +6,7 @@ from datetime import datetime, date
 from bs4 import BeautifulSoup
 from groq import Groq
 import plotly.graph_objects as go
+import pytz
 import re
 
 # ==========================================
@@ -236,6 +237,8 @@ def render_google_maps_populer_saatler(cafe_name: str, day_name: str, highlight_
         bargap=0.2
     )
     return fig
+
+
 
 # ==========================================
 # 5. ULAŞIM & OTOBÜS DETAYLI VERİTABANI
@@ -471,43 +474,109 @@ if "messages" not in st.session_state:
 # ==========================================
 # 10. SOL MENÜ (ÖĞRENCİ PROFİLİ & QUICK LINKS)
 # ==========================================
+st.markdown("""
+<style>
+    /* Sidebar Arka Planı: Açık Lacivert / Soft Navy Tonları */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #eef2ff 0%, #e2e8f0 100%) !important;
+    }
+    
+    /* İç Boşlukları Azaltarak Aşağı Kaydırmayı (Scroll) Engelleme */
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 1rem !important;
+        padding-bottom: 0.5rem !important;
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
+    }
+    
+    /* Sidebar Başlıkları Rengi */
+    [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: #1e3a8a !important;
+        font-weight: 700 !important;
+        margin-top: 0px !important;
+    }
+
+    /* Çizgileri İncelten ve Yakınlaştıran Stil */
+    [data-testid="stSidebar"] hr {
+        margin: 0.5rem 0 !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    /* Şık Hızlı Kısayol Kart Stili */
+    .sidebar-link-card {
+        display: flex;
+        align-items: center;
+        padding: 7px 12px;
+        margin-bottom: 5px;
+        background-color: #ffffff;
+        color: #1e3a8a !important;
+        text-decoration: none !important;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        border-left: 4px solid #2563eb;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        transition: all 0.2s ease-in-out;
+    }
+    .sidebar-link-card:hover {
+        background-color: #1e3a8a;
+        color: #ffffff !important;
+        transform: translateX(3px);
+    }
+</style>
+""", unsafe_allow_html=True)
+
 with st.sidebar:
-    st.title("🎓 UniHub Academic AI")
-    st.caption("Sakarya Üniversitesi Akıllı Kampüs Portalı")
-    st.markdown("---")
-    
-    st.subheader("👤 Öğrenci Profili")
-    faculty = st.selectbox("Fakülteniz", [
-        "Mühendislik Fakültesi",
-        "İşletme Fakültesi",
-        "İlahiyat Fakültesi",
-        "Fen-Edebiyat Fakültesi",
-        "Siyasal Bilgiler Fakültesi",
-        "Diğer"
-    ])
-    
-    department = st.text_input("Bölümünüz", placeholder="Örn: Bilgisayar Mühendisliği")
+    st.markdown("<h2 style='text-align: center; color: #1e3a8a; margin-bottom: 2px; font-size: 22px;'>🎓 SAÜ Asistan</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #475569; font-size: 11px; margin-bottom: 8px;'>Sakarya Üniversitesi Öğrenci Platformu</p>", unsafe_allow_html=True)
     
     st.markdown("---")
-    st.subheader("🔗 Hızlı Kısayollar")
-    st.markdown("- [🔗 SABİS Öğrenci Sistemi](https://sabis.sakarya.edu.tr)")
-    st.markdown("- [🍽️ SABİS Yemek Menüsü](https://menu.sabis.sakarya.edu.tr)")
-    st.markdown("- [🚌 SAKUS Canlı Otobüs Takip](https://sakus.sakarya.bel.tr)")
-    st.markdown("- [📚 SAÜ Merkez Kütüphane](https://kutuphane.sakarya.edu.tr)")
+    
+    # 🎓 Profil Seçimleri (Değişken İsimleri Düzeltildi)
+    st.markdown("<h3 style='font-size: 14px; margin-bottom: 4px;'>🎓 Profil Bilgileri</h3>", unsafe_allow_html=True)
+    
+    faculty = st.selectbox(
+        "Fakülteniz",
+        options=list(FACULTY_KNOWLEDGE.keys()),
+        index=0,
+        help="Fakültenizi seçin"
+    )
+    
+    department = st.text_input(
+        "Bölümünüz",
+        value="",
+        placeholder="Örn: ÇEKO, Bilgisayar Müh.",
+        help="Bölüm adınız"
+    )
 
     st.markdown("---")
-    col_sb1, col_sb2 = st.columns(2)
-    with col_sb1:
+
+    # 🔗 Hızlı Kısayollar
+    st.markdown("<h3 style='font-size: 14px; margin-bottom: 6px;'>🔗 Hızlı Kısayollar</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    <a href="https://sabis.sakarya.edu.tr" target="_blank" class="sidebar-link-card">🔗 &nbsp; SABİS Öğrenci Sistemi</a>
+    <a href="https://yemek.sakarya.edu.tr" target="_blank" class="sidebar-link-card">🍽️ &nbsp; SABİS Yemek Menüsü</a>
+    <a href="https://sakus.sakarya.bel.tr" target="_blank" class="sidebar-link-card">🚌 &nbsp; SAKUS Canlı Otobüs Takip</a>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # 🧹 İşlem Butonları
+    col_b1, col_b2 = st.columns(2)
+    with col_b1:
         if st.button("🧹 Temizle", use_container_width=True):
-            st.session_state.messages = [
-                {"role": "assistant", "content": "Sohbet temizlendi. Nasıl yardımcı olabilirim?"}
-            ]
+            st.session_state.messages = []
             st.rerun()
-    with col_sb2:
-        # Sohbet İndirme / Export Butonu
-        chat_transcript = "\n\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if "content" in m])
-        st.download_button("📥 İndir", chat_transcript, file_name="sau_asistan_sohbet.txt", mime="text/plain", use_container_width=True)
-
+            
+    with col_b2:
+        chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.get("messages", [])])
+        st.download_button(
+            label="📥 İndir",
+            data=chat_text,
+            file_name="sau_asistan_sohbet.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
 # ==========================================
 # 11. ANA EKRAN SEKMELİ YAPI
 # ==========================================
@@ -622,22 +691,41 @@ with tab_food:
 # SEKME 3: DİNAMİK KAFE YOĞUNLUK ANALİZİ & ÖNERİ MOTORU
 # ------------------------------------------
 with tab_cafe:
-    st.subheader("☕ Kampüs Kafeleri Canlı & Saatlik Yoğunluk Analizi")
+    st.subheader("☕ Kampüs Kafeleri Canlı & Saatlik Yoğunlık Analizi")
     st.caption("Google Maps 'Popüler Saatler' algoritması, güne özel doluluk eğrileri ve kampüs mekân önerileri.")
+
+    # 🇹🇷 Türkiye Saat Dilimini ve Gün Adlarını Tanımlıyoruz
+    turkey_tz = pytz.timezone('Europe/Istanbul')
+    now_tr = datetime.now(turkey_tz)
+    
+    days_tr = [
+        "Pazartesi günleri", 
+        "Salı günleri", 
+        "Çarşamba günleri", 
+        "Perşembe günleri", 
+        "Cuma günleri", 
+        "Cumartesi günleri", 
+        "Pazar günleri"
+    ]
+    
+    today_tr_name = days_tr[now_tr.weekday()] # Türkiye saatine göre bugünkü gün
 
     col_filter1, col_filter2, col_filter3 = st.columns([2, 1.5, 1.5])
     with col_filter1:
         selected_cafe = st.selectbox("İncelemek İstediğiniz Kafeyi Seçin", list(CAFE_DATABASE.keys()))
     with col_filter2:
-        selected_day = st.selectbox("Gün Seçin", ["Salı günleri", "Pazartesi günleri", "Çarşamba günleri", "Perşembe günleri", "Cuma günleri", "Cumartesi günleri", "Pazar günleri"])
+        # Özel saat seçildiğinde kullanıcının seçtiği günü al, aksi halde bugünü varsayılan yap
+        selected_day_input = st.selectbox("Gün Seçin", days_tr, index=now_tr.weekday())
     with col_filter3:
         time_mode = st.radio("Saat Modu:", ["🔴 Anlık Saat", "🎛️ Özel Saat Seç"], horizontal=True)
 
-    current_live_hour = datetime.now().hour
+    # ⏰ Saat Modu Mantığı (Türkiye Saati & Canlı Gün Senkronizasyonu)
     if "Özel Saat" in time_mode:
         selected_hour = st.slider("İncelemek İstediğiniz Saati Seçin (06:00 - 23:00)", min_value=6, max_value=23, value=14, step=1)
+        selected_day = selected_day_input
     else:
-        selected_hour = current_live_hour
+        selected_hour = now_tr.hour
+        selected_day = today_tr_name  # Anlık saatte otomatik Türkiye gününü alıyoruz
 
     best_cafe = None
     lowest_density = 999
@@ -750,8 +838,8 @@ with tab_bus:
             </div>
             <div class="info-card">
                 <h4>🚌 Kampüs İçi Ring Hizmeti</h4>
-                <p>• Kampüs içi fakülteler arası ring otobüsleri hafta içi ders saatlerinde <b>10 dakikada bir</b> hareket eder.</p>
-                <p>• Kütüphane ➔ Mühendislik ➔ İlahiyat ➔ Rektörlük hattını takip eder.</p>
+                <p>• Kampüs içi fakülteler arası ring otobüsleri hafta içi ders saatlerinde yaklaşık <b>15 dakikada bir</b> hareket eder.</p>
+                <p>• Otobüs Durakları ➔ Mühendislik ➔ İlahiyat ➔ Fen Fakültesi ➔ Kafeterya ➔ Kütüphane ➔ BESYO ➔ ÇIKIŞ KAPISI hattını takip eder.</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -760,12 +848,12 @@ with tab_bus:
             <div class="info-card">
                 <h4>🚕 SAÜ Kampüs Taksi & Gece Ulaşımı</h4>
                 <p>Gece otobüs seferleri bittiğinde veya acil durumlarda Kampüs Taksi durağı 24 saat hizmet vermektedir.</p>
-                <p><b>📍 Konum:</b> SAÜ Helikopter Pist Girişi / Kafe Karşısı</p>
-                <p><b>📞 Taksi Durağı İletişim:</b> 0 (264) 211 11 00 (Örnek Durak Hattı)</p>
+                <p><b>📍 Konum:</b> Kampüs Dışı</p>
+                <p><b>📞 Taksi Durağı İletişim:</b> 0 (264) 200 00 00 (Örnek Durak Hattı)</p>
             </div>
             <div class="info-card">
-                <h4>🚐 Serdivan Mavi Durak Minibüsleri</h4>
-                <p>• Mavi Durak - Kampüs arası çalışan mavi minibüsler nakit ödeme ile yolcu almaktadır.</p>
+                <h4>🚐 Kampüs Minibüsleri</h4>
+                <p>• Adapazarı Gar - Kampüs arası çalışan mavi minibüsler nakit ödeme ile yolcu almaktadır.</p>
             </div>
             """, unsafe_allow_html=True)
 
