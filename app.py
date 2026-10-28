@@ -244,47 +244,47 @@ def render_google_maps_populer_saatler(cafe_name: str, day_name: str, highlight_
 # 5. ULAŞIM & OTOBÜS DETAYLI VERİTABANI
 # ==========================================
 BUS_LINES_DATA = {
-    "4 Nolu Hat (Kampüs - Gar - Çark Cad.)": {
-        "freq": "3 - 5 Dakikada Bir",
-        "first_bus": "06:15",
-        "last_bus": "23:45",
-        "route": "Esentepe Kampüsü ➔ Kampüs Yolu ➔ Mavi Durak ➔ Serdivan ➔ Çark Caddesi ➔ Sakarya Garı",
-        "desc": "Kampüsten merkeze ve gar bölgesine ulaşım için en sık çalışan ana hattır."
-    },
-    "15 Nolu Hat (Kampüs - Serdivan AVM - Ring)": {
-        "freq": "7 - 10 Dakikada Bir",
-        "first_bus": "06:30",
-        "last_bus": "23:30",
-        "route": "Esentepe Kampüsü ➔ Üniversite Cad. ➔ Serdivan AVM ➔ Cadde54 ➔ Ağız ve Diş Sağlığı ➔ Kampüs Ring",
+    "4 Nolu Hat (Kampüs - Çark Cad. - Gar - Sakarya Park)": {
+        "freq": "50 Dakikada Bir",
+        "first_bus": "06:50",
+        "last_bus": "23:05",
+        "route": "Esentepe Kampüsü ➔ Kampüs Yolu ➔ Mavi Durak ➔ Çark Caddesi ➔ Adapazarı Garı ➔ Sakarya Park",
         "desc": "Alışveriş merkezleri (Serdivan AVM / Cadde54) ve kafeler bölgesine direkt ulaşım sağlar."
     },
-    "24 Nolu Hat (Kampüs - Kent Park - Ofis Park)": {
-        "freq": "10 - 12 Dakikada Bir",
-        "first_bus": "06:45",
-        "last_bus": "23:15",
-        "route": "Esentepe Kampüsü ➔ Mavi Durak ➔ Çark Cad. ➔ Ofis Park ➔ Kent Park ➔ Donatım",
-        "desc": "Kent Park ve Ofis Park istikametine gidecek öğrenciler için ideal hattır."
+    "15 Nolu Hat (Kampüs - Tunatan - Gar - Yeni Stad)": {
+        "freq": "45 Dakikada Bir",
+        "first_bus": "06:35",
+        "last_bus": "23:10",
+        "route": "Esentepe Kampüsü ➔ Üniversite Cad. ➔ Tunatan ➔ Adapazarı Garı ➔ Sakarya Stadyumu",
+        "desc": "Kampüsten merkeze ve gar bölgesine ulaşım için en sık çalışan ana hattır."
     },
-    "54 Nolu Hat (Kampüs - Otogar)": {
-        "freq": "15 - 20 Dakikada Bir",
-        "first_bus": "06:00",
-        "last_bus": "00:15",
-        "route": "Esentepe Kampüsü ➔ Serdivan ➔ D-100 Karayolu ➔ Sakarya Şehirlerarası Otobüs Terminali",
-        "desc": "Şehir dışına seyahat edecek öğrencilerin otogara aktarmasız gitmesini sağlar."
+    "26 Nolu Hat (Kampüs - Serdivan Devlet Hastanesi - Adapazarı Garı - Sakarya Stadyumu)": {
+        "freq": "30 Dakikada Bir",
+        "first_bus": "06:25",
+        "last_bus": "23:20",
+        "route": "Esentepe Kampüsü ➔ Diş Hastanesi ➔ Serdivan Devlet Hastanesi ➔ Adapazarı Garı ➔ Sakarya Stadyumu",
+        "desc": "Serdivan Devlet Hastanesi istikametine gidecek öğrenciler için ideal hattır."
     },
-    "3 Nolu Hat (Kampüs - Kampüs Ring & Çevre)": {
-        "freq": "15 Dakikada Bir",
-        "first_bus": "07:00",
-        "last_bus": "22:00",
-        "route": "Merkez Kütüphane ➔ Mühendislik Fak. ➔ Fen-Edebiyat ➔ İlahiyat ➔ Helikopter Pist Yolu",
-        "desc": "Kampüs içi fakülteler arası ring ve çevre yerleşke hattıdır."
-    },
-    "21B Nolu Hat (Kampüs - Hendek / Dış İlçeler)": {
-        "freq": "20 - 30 Dakikada Bir",
+    "24K Nolu Hat (Kampüs - Korucuk)": {
+        "freq": "Genelde Saatte Bir",
         "first_bus": "06:30",
-        "last_bus": "21:30",
-        "route": "Kampüs ➔ Otoban Bağlantı Yolu ➔ Hendek / Erenler İstikameti",
-        "desc": "Kampüsten dış ilçelere geçiş yapacak öğrenciler için ekspres hattır."
+        "last_bus": "23:00",
+        "route": "Esentepe Kampüsü ➔ Mavi Durak ➔ Serdivan AVM ➔ Sakarya Valiliği ➔ Korucuk",
+        "desc": "Korucukta ikamet eden öğrencilerin aktarmasız gitmesini sağlar."
+    },
+    "6 Nolu Hat (Kampüs - Orta Garaj)": {
+        "freq": "30 - 40 Dakikada Bir",
+        "first_bus": "06:20",
+        "last_bus": "23:00",
+        "route": "Esentepe Kampüsü ➔ Sabahattin Zaim Yurdu ➔ Beşköprü Talebe Yurdu ➔ Araştırma Hastanesi ➔ Orta Garaj",
+        "desc": "Orta garajtan ilçelere aktarma yapmak isteyen öğrenciler için ideal hattır."
+    },
+    "16K Nolu Hat (Kampüs - )": {
+        "freq": "Yaklaşık 2 Saatte Bir",
+        "first_bus": "06:45",
+        "last_bus": "20:00",
+        "route": "Kampüs ➔ Mavi Durak ➔ Serdivan AVM ➔ Adapazarı Yurt ➔ Süleymanbey",
+        "desc": "Adapazarı yurdunda barınan öğrenciler için kampüsten aktarmasız gitmesini sağlar."
     }
 }
 
@@ -476,105 +476,101 @@ if "messages" not in st.session_state:
 # ==========================================
 st.markdown("""
 <style>
-    /* Sidebar Arka Planı: Temiz Açık Slate / Lacivert Tonu */
+    /* 1. Sidebar Koyu Lacivert Arka Planı ve Düzeni */
     [data-testid="stSidebar"] {
-        background-color: #f1f5f9 !important;
+        background-color: #0b192c !important;
     }
     
-    /* İç Boşlukları Sıkılaştırıp Ekran Kaymasını Engelleme */
     [data-testid="stSidebar"] > div:first-child {
         padding-top: 1rem !important;
         padding-bottom: 0.5rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
     }
-    
-    /* Tüm Yazı Renklerini Koyu Laciverte Zorlama */
+
+    /* 2. Genel Sidebar Metinleri */
     [data-testid="stSidebar"] p, 
     [data-testid="stSidebar"] span, 
     [data-testid="stSidebar"] label,
-    [data-testid="stSidebar"] small {
-        color: #0f172a !important;
-        font-weight: 600 !important;
-    }
-
-    /* Form Başlıkları ve Etiketleri (Fakülteniz, Bölümünüz) */
-    [data-testid="stSidebar"] label p {
-        color: #1e3a8a !important;
-        font-weight: 700 !important;
-        font-size: 13.5px !important;
-    }
-
-    /* Ana Başlıklar */
-    [data-testid="stSidebar"] h1, 
-    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
     [data-testid="stSidebar"] h3 {
-        color: #1e3a8a !important;
-        font-weight: 800 !important;
+        color: #ffffff !important;
     }
 
-    /* Çizgiler */
+    /* 3. İnce Çizgiler */
     [data-testid="stSidebar"] hr {
         margin: 0.5rem 0 !important;
-        border-color: #cbd5e1 !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
     }
 
-    /* Hızlı Kısayol Kart Stili */
+    /* 4. Hızlı Kısayol Kart Stili */
     .sidebar-link-card {
         display: flex;
         align-items: center;
-        padding: 8px 12px;
-        margin-bottom: 5px;
-        background-color: #ffffff;
-        color: #1e3a8a !important;
+        padding: 9px 12px;
+        margin-bottom: 6px;
+        background-color: rgba(255, 255, 255, 0.08);
+        color: #ffffff !important;
         text-decoration: none !important;
         border-radius: 8px;
         font-size: 13px;
-        font-weight: 700;
-        border-left: 4px solid #2563eb;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-left: 4px solid #3b82f6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         transition: all 0.2s ease-in-out;
     }
     .sidebar-link-card:hover {
-        background-color: #1e3a8a;
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
         color: #ffffff !important;
         transform: translateX(3px);
     }
 
-    /* BUTONLAR (Temizle & İndir) - Her zaman net görünür */
+    /* 5. TEMİZLE & İNDİR BUTONLARI (Kutu ve İç Yazı Rengi Zorlaması) */
     [data-testid="stSidebar"] button {
         background-color: #ffffff !important;
-        border: 1px solid #94a3b8 !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 8px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
         transition: all 0.2s ease-in-out !important;
     }
-    [data-testid="stSidebar"] button p, 
-    [data-testid="stSidebar"] button div, 
-    [data-testid="stSidebar"] button span {
-        color: #1e3a8a !important;
+    
+    /* Buton İÇİNDEKİ YAZILARI KOYU LACİVERT YAPAR (Görünür Kılar) */
+    [data-testid="stSidebar"] button * {
+        color: #0b192c !important;
         font-weight: 700 !important;
+        opacity: 1 !important;
     }
-    [data-testid="stSidebar"] button:hover {
-        background-color: #1e3a8a !important;
-        border-color: #1e3a8a !important;
+
+    /* Hover Efektleri (Üzerine Gelince) */
+    [data-testid="stSidebar"] div[data-testid="column"]:nth-child(1) button:hover {
+        background-color: #dc2626 !important;
+        border-color: #dc2626 !important;
     }
-    [data-testid="stSidebar"] button:hover p, 
-    [data-testid="stSidebar"] button:hover div, 
-    [data-testid="stSidebar"] button:hover span {
+    [data-testid="stSidebar"] div[data-testid="column"]:nth-child(1) button:hover * {
+        color: #ffffff !important;
+    }
+
+    [data-testid="stSidebar"] div[data-testid="column"]:nth-child(2) button:hover {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+    }
+    [data-testid="stSidebar"] div[data-testid="column"]:nth-child(2) button:hover * {
         color: #ffffff !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown("<h2 style='text-align: center; color: #1e3a8a; margin-bottom: 2px; font-size: 22px;'>🎓 SAÜ Asistan</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #475569; font-size: 11px; margin-bottom: 8px;'>Sakarya Üniversitesi Öğrenci Platformu</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; margin-bottom: 2px; font-size: 22px;'>🎓 SAÜ Asistan</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; opacity: 0.8; font-size: 11px; margin-bottom: 8px;'>Sakarya Üniversitesi Öğrenci Platformu</p>", unsafe_allow_html=True)
     
     st.markdown("---")
     
-    # 🎓 Profil Seçimleri (Değişken Adları Korundu)
-    st.markdown("<h3 style='font-size: 14px; margin-bottom: 4px; color: #1e3a8a;'>🎓 Profil Bilgileri</h3>", unsafe_allow_html=True)
+    # 🎓 Profil Seçimleri
+    st.markdown("<h3 style='font-size: 14px; margin-bottom: 4px;'>🎓 Profil Bilgileri</h3>", unsafe_allow_html=True)
     
     faculty = st.selectbox(
         "Fakülteniz",
@@ -593,7 +589,7 @@ with st.sidebar:
     st.markdown("---")
 
     # 🔗 Hızlı Kısayollar
-    st.markdown("<h3 style='font-size: 14px; margin-bottom: 6px; color: #1e3a8a;'>🔗 Hızlı Kısayollar</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 14px; margin-bottom: 6px;'>🔗 Hızlı Kısayollar</h3>", unsafe_allow_html=True)
     st.markdown("""
     <a href="https://sabis.sakarya.edu.tr" target="_blank" class="sidebar-link-card">🔗 &nbsp; SABİS Öğrenci Sistemi</a>
     <a href="https://yemek.sakarya.edu.tr" target="_blank" class="sidebar-link-card">🍽️ &nbsp; SABİS Yemek Menüsü</a>
@@ -602,7 +598,7 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # 🧹 İşlem Butonları (Her Zaman Net ve Okunabilir)
+    # 🧹 İşlem Butonları
     col_b1, col_b2 = st.columns(2)
     with col_b1:
         if st.button("🧹 Temizle", use_container_width=True):
