@@ -297,7 +297,7 @@ SAU_LETTER_GRADES = {
 }
 
 # ==========================================
-# 6. CHATBOT İÇİN YEMEK BİLGİSİ
+# 6. CHATBOT İÇİN MENÜ BİLGİSİ
 # ==========================================
 def fetch_today_menu_summary():
     today_dt = date.today()
@@ -325,35 +325,43 @@ def fetch_today_menu_summary():
     return "SABİS canlı menüsü için Yemekhane sekmesini ziyaret edebilirsiniz."
 
 # ==========================================
-# 7. AKADEMİK BİLGİ TABANI (KNOWLEDGE BASE)
+# 7. GELİŞMİŞ SAÜ AKADEMİK VE İDARİ MEVZUAT BİLGİ TABANI
 # ==========================================
 SAU_AKADEMIK_BILGI = """
-[SAÜ AKADEMİK TAKVİM BİLGİLERİ]
+[SAÜ AKADEMİK TAKVİM VE TARİHLER]
 - Güz Dönemi Vize Sınavları: 18 - 24 Kasım
 - Güz Dönemi Final Sınavları: 6 - 17 Ocak
 - Bütünleme Sınavları: 25 - 31 Ocak
 - Bahar Dönemi Ders Kayıtları: 10 - 14 Şubat
-- Mazeret Sınav Başvuruları: Sınav haftasını takip eden ilk 3 iş günü içinde fakülte sekreterliğine dilekçe ile yapılır.
 
-[SAÜ NOT SİSTEMİ VE BARAJ DERS KURALLARI]
-- Standart Oranlar: Vize %40, Final %60.
-- FİNAL BARAJI KURALI: Öğrencinin dersten geçebilmesi için Final veya Bütünleme sınavından EN AZ 40 ALMASI ZORUNLUDUR! (Yıl içi ortalaması 90 bile olsa final 39 ise dersten FF ile kalır).
-- Harf Notu Sınırları: AA (90-100), BA (85-89), BB (75-84), CB (65-74), CC (50-64 Standart Geçer), DC (45-49 Şartlı), DD (40-44 Şartlı), FF (0-39 Kaldı).
+[SAÜ NOT SİSTEMİ VE FİNAL BARAJ KURALI]
+- FİNAL BARAJI KURALI: Yıl içi ortalaması ne olursa olsun, öğrencinin dersten geçebilmesi için Final veya Bütünleme sınavından EN AZ 40 ALMASI ZORUNLUDUR! (Final notu 39 olan öğrenci FF ile dersten kalır).
+- Harf Notu Sınırları: AA (90-100), BA (85-89), BB (75-84), CB (65-74), CC (50-64 Standart Geçer), DC (45-49 Şartlı Geçer), DD (40-44 Şartlı Geçer), FF (0-39 Başarısız).
 
-[FAKÜLTE VE BÖLÜM BAZLI STAJ YÖNERGELERİ]
-1. Mühendislik Fakültesi (Bilgisayar, Elektrik-Elektronik, Endüstri vb.):
-   - Zorunlu Staj: Toplam 40 İş Günü (Staj-1: 20 gün, Staj-2: 20 gün).
-   - Başvuru: SABİS Zorunlu Staj Formu doldurulup firmaya imzalatılır. Başlangıçtan en geç 15 gün önce Bölüm Staj Komisyonuna teslim edilir.
+[ÇAP (ÇİFT ANADAL) VE YAN DAL MEVZUATI]
+- ÇAP Başvuru Şartları: Öğrencinin başvurduğu yarıyıla kadar lisans programındaki tüm dersleri başarmış olması, AGNO'sunun en az 3.00/4.00 olması ve sınıfında başarı sıralaması itibarıyla en üst %20'lik dilimde bulunması gerekir. Başvurular 3. veya 5. yarıyıl başında yapılır.
+- Yan Dal Başvuru Şartları: Tüm dersleri başarmış olmak ve AGNO'sunun en az 2.50/4.00 olması gerekir. 3., 4. veya 5. yarıyıl başında başvurulabilir.
+
+[YATAY GEÇİŞ KURALLARI]
+- Kurum İçi / Kurumlar Arası Yatay Geçiş: AGNO en az 2.80 olmalı, başarısız ders bulunmamalıdır.
+- Ek Madde 1 (Central Placement Score / YKS Puanı ile): Öğrencinin kayıt olduğu yıldaki ÖSYS/YKS puanı, geçmek istediği diploma programının o yıldaki taban puanına eşit veya yüksek ise AGNO'ya bakılmaksızın yatay geçiş yapılabilir.
+
+[MAZERET VE TEK DERS SINAV KURALLARI]
+- Mazeret Sınavı: Sınav haftasında sağlık raporu olan veya çakışan sınavı bulunan öğrenciler, sınav haftasını takip eden ilk 3 iş günü içinde fakülte sekreterliğine dilekçe ile başvurur.
+- Tek Ders Sınavı: Mezuniyet için tüm derslerini tamamlamış, sadece 1 başarısız (FF) dersi kalan öğrencilere dönem sonunda verilen tek sınav hakkıdır.
+
+[FAKÜLTE VE BÖLÜM STAJ YÖNERGELERİ]
+1. Mühendislik Fakültesi (Bilgisayar, Elektrik-Elektronik, Endüstri, Makine vb.):
+   - Toplam 40 İş Günü Zorunlu Staj (Staj-1: 20 gün, Staj-2: 20 gün).
+   - SABİS Staj Formu staj başlamadan en geç 15 gün önce Bölüm Staj Komisyonuna onaylatılır.
 2. İşletme / Siyasal Bilgiler Fakültesi:
-   - 7+1 Uygulamalı Eğitim: 8. yarıyılda tam zamanlı firma stajı yapılır. Başvurular 7. yarıyıl sonunda fakülte sisteminden alınır.
+   - 7+1 Uygulamalı Eğitim Modeli: 8. yarıyılda tam zamanlı firma stajı yapılır. SGK kurum tarafından karşılanır.
 3. Fen-Edebiyat / İlahiyat / Diğer Fakülteler:
-   - İsteğe bağlı ve zorunlu stajlar için SGK kurum tarafından karşılanır. Formlar stajdan 10 gün önce teslim edilir.
+   - İsteğe bağlı ve zorunlu staj formu stajdan 10 gün önce fakülte öğrenci işlerine teslim edilir.
 
-[ULAŞIM & SAKUS REHBERİ]
-- 4 Nolu Hat: Kampüs - Mavi Durak - Çark Cad. - Gar (Her 5 dk bir)
-- 15 Nolu Hat: Kampüs - Serdivan AVM - Kampüs (Her 7 dk bir)
-- 24 Nolu Hat: Kampüs - Mavi Durak - Kent Park
-- 54 Nolu Hat: Kampüs - Şehirlerarası Otogar
+[KÜTÜPHANE VE KAMPÜS OLANAKLARI]
+- SAÜ Merkez Kütüphane: Hafta içi ve hafta sonu 7/24 açıktır. Ödünç alma işlemleri SABİS kütüphane modülünden takip edilir.
+- Ulaşım: 4 Nolu (Gar/Çark Cad.), 15 Nolu (Serdivan AVM), 54 Nolu (Otogar), 24 Nolu (Kent Park) hatları kampüse çalışır.
 """
 
 # ==========================================
@@ -368,7 +376,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     system_prompt = f"""
     Sen Sakarya Üniversitesi (SAÜ) öğrencilerinin resmi Akıllı Kampüs Asistanısın. Öğrencilerin zaman kaybetmeden doğru bilgiye ulaşmalarını sağlamak senin ana görevindir.
     
-    [ÖĞRENCİ PROFİLİ]
+    [AKTİF ÖĞRENCİ PROFİLİ]
     - Fakülte: {student_faculty if student_faculty else "Genel SAÜ Öğrencisi"}
     - Bölüm: {student_dept if student_dept else "Belirtilmedi"}
 
@@ -376,14 +384,14 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     🌐 BUGÜNKÜ SABİS YEMEK MENÜSÜ:
     {menu_summary}
 
-    📘 SAÜ AKADEMİK BİLGİ TABANI & REHBERİ:
+    📘 SAÜ MEVZUAT VE AKADEMİK BİLGİ TABANI:
     {SAU_AKADEMIK_BILGI}
 
     [MİSYON VE YANIT KURALLARI]
-    1. Not hesaplama sorularında matematiği yap: (Vize*%40) + (Final*%60) = 50 formülünü kullan. SAÜ'nün **FİNALDEN EN AZ 40 ALMA BARAJI** kuralını belirt!
-    2. Staj sorularında öğrencinin seçtiği fakülte/bölüm yönergesine sadık kal.
-    3. Kafe yoğunluğu sorulursa saatlik doluluk durumunu özetle.
-    4. Yanıtların net, sevimli, motive edici, maddeler (**bold**) halinde ve %100 doğru olsun.
+    1. Öğrencinin sorusunu SAÜ mevzuatına göre tam ve %100 doğru yanıtla.
+    2. Not hesaplama sorularında SAÜ'nün **FİNALDEN EN AZ 40 ALMA BARAJI** kuralını kesinlikle hatırlat!
+    3. Staj, ÇAP veya Yatay Geçiş sorularında öğrencinin seçtiği fakülte/bölüm yönergesine özel bilgi ver.
+    4. Yanıtların nazik, motive edici, düzenli maddeler (**bold** etiketli) ve uygun emojilerle zenginleştirilmiş olsun.
     """
 
     full_messages = [{"role": "system", "content": system_prompt}] + messages_history
@@ -411,7 +419,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
 # ==========================================
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Merhaba! Ben SAÜ Akıllı Kampüs Asistanı. Akademik takvim, bölümüne özel staj rehberi, not hesabı, canlı kafe yoğunluğu ve günün yemek menüsü hakkında kafana takılan her şeyi sorabilirsin. 🎓"}
+        {"role": "assistant", "content": "Merhaba! Ben SAÜ Akıllı Kampüs Asistanı. Akademik takvim, staj yönergeleri, ÇAP/Yan Dal, sınav barajları, otobüs hatları ve yemek menüsü hakkında kafana takılan her şeyi sorabilirsin. 🎓"}
     ]
 
 # ==========================================
@@ -442,11 +450,17 @@ with st.sidebar:
     st.markdown("- [📚 SAÜ Merkez Kütüphane](https://kutuphane.sakarya.edu.tr)")
 
     st.markdown("---")
-    if st.button("🧹 Sohbeti Temizle", use_container_width=True):
-        st.session_state.messages = [
-            {"role": "assistant", "content": "Sohbet temizlendi. Nasıl yardımcı olabilirim?"}
-        ]
-        st.rerun()
+    col_sb1, col_sb2 = st.columns(2)
+    with col_sb1:
+        if st.button("🧹 Temizle", use_container_width=True):
+            st.session_state.messages = [
+                {"role": "assistant", "content": "Sohbet temizlendi. Nasıl yardımcı olabilirim?"}
+            ]
+            st.rerun()
+    with col_sb2:
+        # Sohbet İndirme / Export Butonu
+        chat_transcript = "\n\n".join([f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages if "content" in m])
+        st.download_button("📥 İndir", chat_transcript, file_name="sau_asistan_sohbet.txt", mime="text/plain", use_container_width=True)
 
 # ==========================================
 # 11. ANA EKRAN SEKMELİ YAPI
@@ -463,26 +477,45 @@ tab_chat, tab_food, tab_cafe, tab_bus, tab_calc = st.tabs([
 ])
 
 # ------------------------------------------
-# SEKME 1: AKILLI CHATBOT
+# SEKME 1: AKILLI CHATBOT (GELİŞTİRİLMİŞ)
 # ------------------------------------------
 with tab_chat:
-    st.markdown("##### ⚡ Hızlı Sorular:")
-    q1, q2, q3, q4 = st.columns(4)
-
+    st.markdown("##### ⚡ Hızlı Soru Kısayolları:")
+    
+    q_cat1, q_cat2 = st.columns(2)
     prompt_to_send = None
-    with q1:
-        if st.button("📅 Vize & Final Tarihleri", use_container_width=True):
-            prompt_to_send = "Vize ve final sınav tarihleri ne zaman?"
-    with q2:
-        if st.button("📝 Staj Yönergesi", use_container_width=True):
-            prompt_to_send = f"{faculty} {department} öğrencisiyim. Staj yaparken izlemem gereken adımlar nelerdir?"
-    with q3:
-        if st.button("☕ Lumo Yoğun mu?", use_container_width=True):
-            prompt_to_send = "Lumo Coffee ve Coffy şu an kalabalık mı?"
-    with q4:
-        if st.button("🧮 Vize 45 Aldım Geçer miyim?", use_container_width=True):
-            prompt_to_send = "Vizeden 45 aldım, dersten CC ile geçmek için finalden kaç almam lazım?"
 
+    with q_cat1:
+        st.caption("🎓 Akademik & Mevzuat:")
+        q_col1, q_col2 = st.columns(2)
+        with q_col1:
+            if st.button("📅 Vize & Final Tarihleri", use_container_width=True):
+                prompt_to_send = "Vize ve final sınav tarihleri ne zaman?"
+            if st.button("📝 Staj Yönergesi", use_container_width=True):
+                prompt_to_send = f"{faculty} {department} öğrencisiyim. Staj yaparken izlemem gereken adımlar nelerdir?"
+        with q_col2:
+            if st.button("🎓 ÇAP Şartları Nedir?", use_container_width=True):
+                prompt_to_send = "SAÜ'de Çift Anadal (ÇAP) yapma şartları nelerdir?"
+            if st.button("🔄 Yatay Geçiş Kuralları", use_container_width=True):
+                prompt_to_send = "SAÜ yatay geçiş başvuru şartları ve Ek Madde 1 kuralları nedir?"
+
+    with q_cat2:
+        st.caption("🎪 Kampüs & Yaşam:")
+        q_col3, q_col4 = st.columns(2)
+        with q_col3:
+            if st.button("☕ Lumo Yoğun mu?", use_container_width=True):
+                prompt_to_send = "Lumo Coffee ve Coffy şu an kalabalık mı?"
+            if st.button("🍱 Bugün Yemekte Ne Var?", use_container_width=True):
+                prompt_to_send = "Bugün yemekhanede hangi yemekler var?"
+        with q_col4:
+            if st.button("🧮 Vize 45 Aldım Geçer miyim?", use_container_width=True):
+                prompt_to_send = "Vizeden 45 aldım, dersten CC ile geçmek için finalden kaç almam lazım?"
+            if st.button("🚌 Otogar Otobüsü Kaçta?", use_container_width=True):
+                prompt_to_send = "Otogara giden 54 nolu otobüsün ilk ve son sefer saatleri nedir?"
+
+    st.markdown("---")
+
+    # Sohbet Geçmişi Listeleme
     for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
@@ -490,7 +523,7 @@ with tab_chat:
                 fig_chat = render_google_maps_populer_saatler(message["cafe_chart"], "Salı günleri", datetime.now().hour)
                 st.plotly_chart(fig_chat, use_container_width=True, config={'displayModeBar': False}, key=f"chat_hist_chart_{idx}")
 
-    user_query = st.chat_input("Akademik takvim, staj, not hesabı veya kampüs hakkında sorun...")
+    user_query = st.chat_input("Akademik takvim, ÇAP, staj, otobüs veya kampüs hakkında sorun...")
     if prompt_to_send:
         user_query = prompt_to_send
 
@@ -710,7 +743,7 @@ with tab_calc:
     st.markdown("---")
     st.markdown("### 2️⃣ Yıl İçi Değerlendirme Bileşenleri (Vize & 3 Adet Opsiyonel Ödev/Proje)")
 
-    # 2. BİLEŞEN GİRDİLERİ (2x2 GRID)
+    # 2. BİLEŞEN GİRDİLERİ
     col_vize, col_ek1 = st.columns(2)
     with col_vize:
         st.markdown("##### 📝 Vize Sınavı")
