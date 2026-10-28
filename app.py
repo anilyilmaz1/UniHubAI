@@ -325,9 +325,9 @@ def fetch_today_menu_summary():
     return "SABİS canlı menüsü için Yemekhane sekmesini ziyaret edebilirsiniz."
 
 # ==========================================
-# 7. GELİŞMİŞ SAÜ AKADEMİK VE İDARİ MEVZUAT BİLGİ TABANI
+# 7. GENEL SAÜ MEVZUATI VE FAKÜLTE ÖZEL DOKÜMAN TABANI
 # ==========================================
-SAU_AKADEMIK_BILGI = """
+SAU_GENEL_MEVZUAT = """
 [SAÜ AKADEMİK TAKVİM VE TARİHLER]
 - Güz Dönemi Vize Sınavları: 18 - 24 Kasım
 - Güz Dönemi Final Sınavları: 6 - 17 Ocak
@@ -344,25 +344,49 @@ SAU_AKADEMIK_BILGI = """
 
 [YATAY GEÇİŞ KURALLARI]
 - Kurum İçi / Kurumlar Arası Yatay Geçiş: AGNO en az 2.80 olmalı, başarısız ders bulunmamalıdır.
-- Ek Madde 1 (Central Placement Score / YKS Puanı ile): Öğrencinin kayıt olduğu yıldaki ÖSYS/YKS puanı, geçmek istediği diploma programının o yıldaki taban puanına eşit veya yüksek ise AGNO'ya bakılmaksızın yatay geçiş yapılabilir.
+- Ek Madde 1 (YKS Puanı ile): Kayıt olunan yıldaki YKS puanı, geçmek istenen diploma programının o yıldaki taban puanına eşit veya yüksek ise AGNO'ya bakılmaksızın yatay geçiş yapılabilir.
 
 [MAZERET VE TEK DERS SINAV KURALLARI]
-- Mazeret Sınavı: Sınav haftasında sağlık raporu olan veya çakışan sınavı bulunan öğrenciler, sınav haftasını takip eden ilk 3 iş günü içinde fakülte sekreterliğine dilekçe ile başvurur.
-- Tek Ders Sınavı: Mezuniyet için tüm derslerini tamamlamış, sadece 1 başarısız (FF) dersi kalan öğrencilere dönem sonunda verilen tek sınav hakkıdır.
-
-[FAKÜLTE VE BÖLÜM STAJ YÖNERGELERİ]
-1. Mühendislik Fakültesi (Bilgisayar, Elektrik-Elektronik, Endüstri, Makine vb.):
-   - Toplam 40 İş Günü Zorunlu Staj (Staj-1: 20 gün, Staj-2: 20 gün).
-   - SABİS Staj Formu staj başlamadan en geç 15 gün önce Bölüm Staj Komisyonuna onaylatılır.
-2. İşletme / Siyasal Bilgiler Fakültesi:
-   - 7+1 Uygulamalı Eğitim Modeli: 8. yarıyılda tam zamanlı firma stajı yapılır. SGK kurum tarafından karşılanır.
-3. Fen-Edebiyat / İlahiyat / Diğer Fakülteler:
-   - İsteğe bağlı ve zorunlu staj formu stajdan 10 gün önce fakülte öğrenci işlerine teslim edilir.
-
-[KÜTÜPHANE VE KAMPÜS OLANAKLARI]
-- SAÜ Merkez Kütüphane: Hafta içi ve hafta sonu 7/24 açıktır. Ödünç alma işlemleri SABİS kütüphane modülünden takip edilir.
-- Ulaşım: 4 Nolu (Gar/Çark Cad.), 15 Nolu (Serdivan AVM), 54 Nolu (Otogar), 24 Nolu (Kent Park) hatları kampüse çalışır.
+- Mazeret Sınavı: Sınav haftasını takip eden ilk 3 iş günü içinde fakülte sekreterliğine dilekçe verilir.
+- Tek Ders Sınavı: Mezuniyet için tüm derslerini tamamlamış, sadece 1 başarısız (FF) dersi kalan öğrencilere verilir.
 """
+
+# FAKÜLTE BAZLI DİNAMİK BİLGİ TABANI (5 ANA FAKÜLTE)
+FACULTY_KNOWLEDGE = {
+    "Mühendislik Fakültesi": """
+    [MÜHENDİSLİK FAKÜLTESİ ÖZEL YÖNERGESİ]
+    - Staj Kuralı: Toplam 40 İş Günü zorunlu staj vardır (Staj-1: 20 gün donanım/yazılım/tasarım, Staj-2: 20 gün saha/organizasyon).
+    - Başvuru Zamanı: SABİS Staj Formu doldurulup staj başlamadan EN GEÇ 15 Gün önce Bölüm Staj Komisyonuna teslim edilir.
+    - Bitirme Tasarımı (BSG): AGNO en az 2.00 olmalı ve 5. yarıyıldan başarısız (FF) ders bulunmamalıdır.
+    - Devam Zorunluluğu: Laboratuvarlı/Uygulamalı derslerde %80, teorik derslerde %70 devam şartı vardır.
+    """,
+    
+    "İşletme Fakültesi": """
+    [İŞLETME FAKÜLTESİ ÖZEL YÖNERGESİ (7+1 MODELİ)]
+    - 7+1 Uygulamalı Eğitim Modeli: Öğrenciler 7 dönem kampüste ders alır, 8. yarıyılın tamamını (16 hafta) anlaşmalı kurumlarda tam zamanlı çalışarak geçirir.
+    - 7+1 Başvuru Şartı: 8. yarıyıla geçerken alttan en fazla 3 başarısız (FF) dersi olan öğrenciler tam zamanlı işyeri eğitimine gidebilir.
+    - Sigorta & Ücret: SGK sigortası üniversite tarafından, ücret ise anlaşmalı firma tarafından karşılanır.
+    """,
+    
+    "İlahiyat Fakültesi": """
+    [İLAHİYAT FAKÜLTESİ ÖZEL YÖNERGESİ]
+    - Zorunlu Hazırlık Sınıfı: Zorunlu Arapça hazırlık sınıfı bulunmaktadır.
+    - Mesleki Staj & Uygulama: 7. ve 8. yarıyıllarda Milli Eğitim Bakanlığı (MEB) okullarında ve Diyanet kurumlarında öğretmenlik/mesleki staj uygulaması yapılır.
+    """,
+    
+    "Fen-Edebiyat Fakültesi": """
+    [FEN-EDEBİYAT FAKÜLTESİ ÖZEL YÖNERGESİ]
+    - Staj Kuralı: İsteğe bağlı ve zorunlu stajlar toplam 20 iş günüdür.
+    - Evrak Teslimi: Staj başvuru evrakları staj başlangıcından en geç 10 gün önce Fakülte Öğrenci İşlerine teslim edilir.
+    - Laboratuvar Katılımı: Fen bölümlerinde (Kimya, Fizik, Biyoloji) laboratuvar derslerine %80 devam zorunludur.
+    """,
+    
+    "Siyasal Bilgiler Fakültesi": """
+    [SİYASAL BİLGİLER FAKÜLTESİ ÖZEL YÖNERGESİ]
+    - Kurumsal Staj & 7+1: Bölüm bazlı olarak 7+1 uygulamalı eğitimi ve isteğe bağlı kurum stajları desteklenmektedir.
+    - Kamusal Stajlar: Kaymakamlık, Valilik ve Bakanlık staj başvuruları için fakülte dekanlığından resmi onay belgesi alınmalıdır.
+    """
+}
 
 # ==========================================
 # 8. GROQ AI CEVAP ENTEGRASYONU
@@ -372,9 +396,12 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
         return "⚠️ GROQ_API_KEY bulunamadı. Lütfen Hugging Face Secrets alanına GROQ_API_KEY ekleyin."
 
     menu_summary = fetch_today_menu_summary()
+    
+    # Fakülteye özel dokümanı çek (Eğer listede yoksa varsayılan mesaj ver)
+    faculty_doc = FACULTY_KNOWLEDGE.get(student_faculty, "Bu fakülte için genel SAÜ Lisans Eğitim-Öğretim Yönetmeliği hükümleri geçerlidir.")
 
     system_prompt = f"""
-    Sen Sakarya Üniversitesi (SAÜ) öğrencilerinin resmi Akıllı Kampüs Asistanısın. Öğrencilerin zaman kaybetmeden doğru bilgiye ulaşmalarını sağlamak senin ana görevindir.
+    Sen Sakarya Üniversitesi (SAÜ) resmi Akıllı Kampüs Asistanısın. Öğrencilere kesin, doğru ve pratik bilgi vermek senin görevindir.
     
     [AKTİF ÖĞRENCİ PROFİLİ]
     - Fakülte: {student_faculty if student_faculty else "Genel SAÜ Öğrencisi"}
@@ -384,14 +411,18 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     🌐 BUGÜNKÜ SABİS YEMEK MENÜSÜ:
     {menu_summary}
 
-    📘 SAÜ MEVZUAT VE AKADEMİK BİLGİ TABANI:
-    {SAU_AKADEMIK_BILGI}
+    📘 GENEL SAÜ MEVZUAT BİLGİSİ:
+    {SAU_GENEL_MEVZUAT}
+
+    🏢 SEÇİLİ FAKÜLTEYE ÖZEL YÖNERGE VE DOKÜMAN:
+    {faculty_doc}
 
     [MİSYON VE YANIT KURALLARI]
-    1. Öğrencinin sorusunu SAÜ mevzuatına göre tam ve %100 doğru yanıtla.
-    2. Not hesaplama sorularında SAÜ'nün **FİNALDEN EN AZ 40 ALMA BARAJI** kuralını kesinlikle hatırlat!
-    3. Staj, ÇAP veya Yatay Geçiş sorularında öğrencinin seçtiği fakülte/bölüm yönergesine özel bilgi ver.
+    1. Öğrenciye yanıt verirken öncelikle SEÇİLİ FAKÜLTE YÖNERGESİNİ ({student_faculty}) ve GENEL SAÜ MEVZUATINI esas al.
+    2. Eğer öğrenci bölümünü ({student_dept}) belirttiyse, yanıtı ve vereceğin tavsiyeleri/örnekleri **mümkün olduğunca o bölümün meslek alanına özelleştir**.
+    3. Not hesaplama sorularında SAÜ'nün **FİNALDEN EN AZ 40 ALMA BARAJI** kuralını kesinlikle hatırlat!
     4. Yanıtların nazik, motive edici, düzenli maddeler (**bold** etiketli) ve uygun emojilerle zenginleştirilmiş olsun.
+    5. Dokümanda kesin olarak yer almayan konularda uydurma bilgi verme, öğrenciyi Fakülte Öğrenci İşlerine veya Bölüm Başkanlığına yönlendir.
     """
 
     full_messages = [{"role": "system", "content": system_prompt}] + messages_history
@@ -419,7 +450,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
 # ==========================================
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Merhaba! Ben SAÜ Akıllı Kampüs Asistanı. Akademik takvim, staj yönergeleri, ÇAP/Yan Dal, sınav barajları, otobüs hatları ve yemek menüsü hakkında kafana takılan her şeyi sorabilirsin. 🎓"}
+        {"role": "assistant", "content": "Merhaba! Ben SAÜ Akıllı Kampüs Asistanı. Akademik takvim, fakültenize özel staj yönergeleri, ÇAP/Yan Dal, sınav barajları, otobüs hatları ve yemek menüsü hakkında kafana takılan her şeyi sorabilirsin. 🎓"}
     ]
 
 # ==========================================
@@ -477,7 +508,7 @@ tab_chat, tab_food, tab_cafe, tab_bus, tab_calc = st.tabs([
 ])
 
 # ------------------------------------------
-# SEKME 1: AKILLI CHATBOT (GELİŞTİRİLMİŞ)
+# SEKME 1: AKILLI CHATBOT (FAKÜLTE & BÖLÜM ODAKLI)
 # ------------------------------------------
 with tab_chat:
     st.markdown("##### ⚡ Hızlı Soru Kısayolları:")
@@ -486,13 +517,13 @@ with tab_chat:
     prompt_to_send = None
 
     with q_cat1:
-        st.caption("🎓 Akademik & Mevzuat:")
+        st.caption("🎓 Akademik & Fakülte Mevzuatı:")
         q_col1, q_col2 = st.columns(2)
         with q_col1:
             if st.button("📅 Vize & Final Tarihleri", use_container_width=True):
                 prompt_to_send = "Vize ve final sınav tarihleri ne zaman?"
-            if st.button("📝 Staj Yönergesi", use_container_width=True):
-                prompt_to_send = f"{faculty} {department} öğrencisiyim. Staj yaparken izlemem gereken adımlar nelerdir?"
+            if st.button("📝 Fakültemin Staj Yönergesi", use_container_width=True):
+                prompt_to_send = f"{faculty} {department if department else ''} öğrencisiyim. Staj yaparken izlemem gereken adımlar ve kurallar nelerdir?"
         with q_col2:
             if st.button("🎓 ÇAP Şartları Nedir?", use_container_width=True):
                 prompt_to_send = "SAÜ'de Çift Anadal (ÇAP) yapma şartları nelerdir?"
@@ -523,7 +554,7 @@ with tab_chat:
                 fig_chat = render_google_maps_populer_saatler(message["cafe_chart"], "Salı günleri", datetime.now().hour)
                 st.plotly_chart(fig_chat, use_container_width=True, config={'displayModeBar': False}, key=f"chat_hist_chart_{idx}")
 
-    user_query = st.chat_input("Akademik takvim, ÇAP, staj, otobüs veya kampüs hakkında sorun...")
+    user_query = st.chat_input("Akademik takvim, fakülte staj kuralı, ÇAP, otobüs veya kampüs hakkında sorun...")
     if prompt_to_send:
         user_query = prompt_to_send
 
@@ -533,7 +564,7 @@ with tab_chat:
             st.markdown(user_query)
 
         with st.chat_message("assistant"):
-            with st.spinner("SAÜ bilgi tabanı ve veri kaynakları taranıyor..."):
+            with st.spinner(f"{faculty} bilgi tabanı ve SAÜ mevzuatı taranıyor..."):
                 history_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages if "content" in m]
                 response_text = generate_academic_response(history_for_api, faculty, department)
                 st.markdown(response_text)
