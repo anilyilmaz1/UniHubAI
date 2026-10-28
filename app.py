@@ -408,6 +408,9 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
     faculty_doc = FACULTY_KNOWLEDGE.get(student_faculty, "Genel SAÜ mevzuatı geçerlidir.")
     faculty_url = FACULTY_URLS.get(student_faculty, "https://ogris.sakarya.edu.tr")
 
+    # Fakülte ismi girilmemişse genel etiket kullan
+    faculty_label = student_faculty if student_faculty else "SAÜ"
+
     system_prompt = f"""
     Sen Sakarya Üniversitesi (SAÜ) resmi Akıllı Kampüs Asistanısın.
     
@@ -428,18 +431,17 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
 
     [MİSYON VE YANIT KURALLARI]
     1. Öğrenciye yanıt verirken {student_faculty} yönergesini ve genel SAÜ mevzuatını esas al.
-    2. Öğrenciyi Öğrenci İşleri'ne, duyurulara veya fakülteye yönlendirirken KESİNLİKLE şu Markdown link formatını kullan:
-       👉 `[{student_faculty} Öğrenci İşleri]({faculty_url})` veya `[Fakülte Öğrenci İşleri]({faculty_url})`
+    2. Öğrenciyi Öğrenci İşleri'ne veya duyurulara yönlendirirken KESİNLİKLE doğrudan tıklanabilir Markdown link formatını kullan (asla ters tırnak veya kod bloğu içine alma):
+       👉 [{faculty_label} Öğrenci İşleri]({faculty_url})
     3. Not hesaplama sorularında SAÜ'nün FİNALDEN EN AZ 40 ALMA BARAJI kuralını kesinlikle hatırlat!
     """
 
     full_messages = [{"role": "system", "content": system_prompt}] + messages_history
 
-    # Commit geçmişinizdeki ana model ve yedekler
     candidate_models = [
-        "qwen/qwen3.8-27b",         # 1. Tercih: Projenizdeki güncel Qwen modeli
-        "llama-3.3-70b-versatile",  # 2. Tercih: Güçlü yedek
-        "llama3-8b-8192"            # 3. Tercih: Hızlı yedek
+        "qwen/qwen3.8-27b",
+        "llama-3.3-70b-versatile",
+        "llama3-8b-8192"
     ]
 
     last_error = ""
@@ -449,7 +451,7 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
                 model=model_name,
                 messages=full_messages,
                 temperature=0.3,
-                max_tokens=800  # qwen modelinin 429 hatası vermemesi için zorunlu
+                max_tokens=800
             )
             return completion.choices[0].message.content
         except Exception as e:
