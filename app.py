@@ -435,27 +435,28 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
 
     full_messages = [{"role": "system", "content": system_prompt}] + messages_history
 
-    # Groq sunucularında %100 aktif çalışan güncel model listesi
+    # Commit geçmişinizdeki ana model ve yedekler
     candidate_models = [
-        "llama-3.3-70b-versatile",  # Ana güçlü model
-        "llama3-8b-8192",           # En hızlı ve stabil Llama 3 modeli
-        "gemma2-9b-it",             # Yedek Google Gemma 2 modeli
-        "mixtral-8x7b-32768"        # Alternatif yedek model
+        "qwen/qwen3.8-27b",         # 1. Tercih: Projenizdeki güncel Qwen modeli
+        "llama-3.3-70b-versatile",  # 2. Tercih: Güçlü yedek
+        "llama3-8b-8192"            # 3. Tercih: Hızlı yedek
     ]
 
+    last_error = ""
     for model_name in candidate_models:
         try:
             completion = client.chat.completions.create(
                 model=model_name,
                 messages=full_messages,
                 temperature=0.3,
-                max_tokens=800
+                max_tokens=800  # qwen modelinin 429 hatası vermemesi için zorunlu
             )
             return completion.choices[0].message.content
-        except Exception:
+        except Exception as e:
+            last_error = str(e)
             continue
 
-    return "Şu an sunucu yoğunluğu nedeniyle yanıt üretilemedi. Lütfen birkaç saniye sonra tekrar deneyiniz."
+    return f"⚠️ Bağlantı Hatası: {last_error}"
 
 # ==========================================
 # 9. SESSION STATE İLKELENDİRME
