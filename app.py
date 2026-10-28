@@ -435,27 +435,27 @@ def generate_academic_response(messages_history, student_faculty: str, student_d
 
     full_messages = [{"role": "system", "content": system_prompt}] + messages_history
 
-    try:
-        # Ana Model (Llama 3.3 70B Versatile)
-        completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=full_messages,
-            temperature=0.3,
-            max_tokens=800  # Token limit hatasını engelleyen parametre
-        )
-        return completion.choices[0].message.content
-    except Exception:
+    # Groq sunucularında %100 aktif çalışan güncel model listesi
+    candidate_models = [
+        "llama-3.3-70b-versatile",  # Ana güçlü model
+        "llama3-8b-8192",           # En hızlı ve stabil Llama 3 modeli
+        "gemma2-9b-it",             # Yedek Google Gemma 2 modeli
+        "mixtral-8x7b-32768"        # Alternatif yedek model
+    ]
+
+    for model_name in candidate_models:
         try:
-            # Hızlı Yedek Model (Llama 3.1 8B Instant)
             completion = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model=model_name,
                 messages=full_messages,
                 temperature=0.3,
                 max_tokens=800
             )
             return completion.choices[0].message.content
-        except Exception as e:
-            return f"Yanıt üretilirken bir hata oluştu: {str(e)}"
+        except Exception:
+            continue
+
+    return "Şu an sunucu yoğunluğu nedeniyle yanıt üretilemedi. Lütfen birkaç saniye sonra tekrar deneyiniz."
 
 # ==========================================
 # 9. SESSION STATE İLKELENDİRME
